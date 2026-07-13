@@ -1,0 +1,2 @@
+# StyleMind
+Minor Project 
