@@ -34,10 +34,21 @@ outfit recommendations).
   | Season | 75.1% | 0.687 | Partly aided by 3/10 categories having season hardcoded by rule, not learned |
 
 - **Local demo pipeline** (`src/demo.py`): loads the trained checkpoint +
-  label maps, opens a native file picker, predicts category/texture/season
-  for the selected image, displays results side-by-side with confidence
-  scores, and loops — asking whether to test another image — until the
-  user chooses to exit.
+  label maps, opens a native file picker, and runs the **same
+  preprocessing pipeline training used** — YOLO-seg background removal,
+  crop, letterbox resize — before classification, so inference matches
+  training exactly rather than skipping straight to a plain resize.
+  Displays four panels per image: the original photo, the YOLO
+  segmentation overlay, the exact 224×224 image the model saw, and the
+  category/texture/season predictions with confidence scores plus 3
+  dominant garment colors (K-Means on the masked foreground, for
+  downstream color-harmony scoring). Loops — asking whether to test
+  another image — until the user chooses to exit.
+- **Drive-disconnect resilience** (`pipeline/utils.py`): a
+  `read_with_retry()` wrapper used around Drive file reads during the
+  longest-running steps (YOLO preprocessing, CLIP labeling), so a
+  transient Drive disconnect mid-run retries automatically instead of
+  crashing the whole pass.
 
 ## Current Problems
 
@@ -62,11 +73,7 @@ outfit recommendations).
   zero-shot rather than human annotation, the model is learning to mimic
   CLIP's judgments on this dataset — it can't meaningfully exceed CLIP's
   own reliability here, only match it.
-- **Checkpoint/dataset distribution**: training artifacts
-  (`best_model_phase1.keras`, dataset, intermediate manifests) currently
-  live on Google Drive from the Colab training runs — not yet synced or
-  versioned in this repo. The model file itself may also need Git LFS if
-  it exceeds GitHub's plain-push size limits.
+
 
 ## Planned Solutions
 
@@ -87,36 +94,61 @@ outfit recommendations).
   which tradeoff is right depends on the real-world class distribution
   the deployed app will actually see.
 
-*(This section reflects known issues as of the current model version —
-update it whenever a fix ships or a new gap is found.)*
+
 
 ## Repo Structure
 
 ```
 stylemind/
 ├── models/
-│   ├── best_model_phase1.keras   # trained model weights
-│   └── label_maps.json           # category/texture/season label mappings
+│   ├── best_model_phase1.keras          # trained classification model
+│   ├── deepfashion2_yolov8s-seg.pt      # YOLO-seg background removal model
+│   └── label_maps.json                  # category/texture/season label mappings
 ├── src/
-│   ├── predict.py                # reusable inference module
+│   ├── predict.py                # reusable inference module (segmentation + classification + color extraction)
 │   └── demo.py                   # local inference + demo script
 ├── pipeline/                     # training/preprocessing code (how the model was built)
 │   ├── config.py
+│   ├── utils.py                  # shared Drive-retry helper
 │   ├── step1_convert_to_jpg.py … step10_evaluate.py
 │   ├── experiments/               # rejected approaches, kept for transparency
+│   ├── StyleMind_v4.ipynb         # original Colab notebook (outputs stripped for size)
 │   └── requirements-training.txt
+├── INTERFACE.md                   # predict() contract, for the recommendation-system handoff
 ├── requirements.txt               # inference-only deps
 └── outputs/                       # optional saved demo results (gitignored)
+```
+
+## Setup
+
+**1. Get the model artifacts.** From `MyDrive/StyleMind_self/` in Drive,
+download these into this project's `models/` folder:
+- `best_model_phase1.keras` — the locked final classification model
+- `label_maps.json` — category/texture/season index mappings
+
+You also need the **YOLO-seg background-removal checkpoint** — `predict()`
+now runs the same segmentation step training used, so inference matches
+training exactly. If it's not already saved in your Drive folder,
+download it directly:
+```python
+from huggingface_hub import hf_hub_download
+import shutil
+downloaded_path = hf_hub_download(repo_id="Bingsu/adetailer", filename="deepfashion2_yolov8s-seg.pt")
+shutil.copy(downloaded_path, "models/deepfashion2_yolov8s-seg.pt")
+```
+Place it in `models/` as `deepfashion2_yolov8s-seg.pt`.
+
+**2. Set up the environment:**
+```bash
+python -m venv venv
+venv\Scripts\activate        # Windows
+
+pip install -r requirements.txt
 ```
 
 ## Running the Demo
 
 ```bash
-python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # macOS/Linux
-
-pip install -r requirements.txt
 python src/demo.py
 ```
 

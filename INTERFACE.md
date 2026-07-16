@@ -33,8 +33,29 @@ result = predict("path/to/image.jpg")
     'texture_confidence': 0.81,      # float, 0.0-1.0
     'season': 'winter',              # str — one of 4 possible values
     'season_confidence': 0.88,       # float, 0.0-1.0
+    'dominant_colors': ['#1a1a2e', '#4a4a5e', '#c9c9d1'],  # 3 hex strings, most dominant first
+    'mask_found': True,              # bool — whether YOLO-seg detected a garment mask
 }
 ```
+
+`predict()` also accepts `return_segmentation=True`, which additionally
+returns a second dict (`seg`) with the intermediate segmentation output
+(`final`, `mask_overlay`, `foreground_pixels`, `mask_found`) — useful if
+you want to show or debug the background-removal step, not needed for
+plain classification use.
+
+**`dominant_colors`** — 3 hex color strings extracted via K-Means on the
+garment's masked foreground pixels (background excluded), ordered by
+cluster size (most dominant first). If `mask_found` is `False` (YOLO
+didn't detect a garment), colors are extracted from the whole image
+instead, including background — treat colors as less reliable in that
+case.
+
+**`mask_found`** — `False` means YOLO-seg didn't detect a garment in the
+image and the pipeline fell back to the original (uncropped) image, same
+fallback behavior used during training preprocessing. When `False`,
+treat `dominant_colors` with extra caution — background pixels weren't
+excluded.
 
 **Category** (10 classes):
 `Blazer, Dress, Formal_Pant, Jacket, Pants, Shirt, Shorts, Skirt, Top, Warmwear`
@@ -80,12 +101,6 @@ confidences the same:
 
 ## What this module does NOT provide yet
 
-- **Dominant color extraction** (K-Means on the garment's masked
-  foreground) — this existed in an earlier prototype version of the
-  pipeline but did not make it into this final model/repo. If color
-  harmony is part of the recommendation system's scoring, this needs to
-  be built (either here or in the recommendation module) before that
-  can work.
 - **Batch prediction** — `predict()` only takes one image path at a
   time. If the recommendation system needs to score many images at
   once, either loop over `predict()` calls or ask for a batch-capable
@@ -121,5 +136,6 @@ is_season_flexible = (season == 'all-season')
   per head?
 - Should `all-season` items be scored as compatible with every season
   query, or treated as a weaker/neutral signal?
-- Who owns building color extraction — classification side or
-  recommendation side?
+- Should `dominant_colors` be trusted the same way when `mask_found` is
+  `False` (background-included fallback), or discounted/flagged
+  downstream?
