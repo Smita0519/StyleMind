@@ -1,0 +1,21 @@
+# Requirements for the training/preprocessing pipeline (pipeline/ folder).
+# This is separate from the root requirements.txt, which only covers
+# running the trained model (src/demo.py, src/predict.py).
+#
+# The training pipeline needs a GPU in practice (YOLO-seg + CLIP + Keras
+# training) — it was developed and run in Google Colab, which has these
+# preinstalled except where noted.
+
+tensorflow>=2.15,<3.0
+numpy>=1.26,<2.0
+Pillow>=10.0
+pandas>=2.0
+scikit-learn>=1.3
+matplotlib>=3.8
+seaborn>=0.13
+
+# Dataset prep — not needed for inference, only Steps 3-5
+ultralytics>=8.1
+huggingface_hub>=0.20
+open_clip_torch>=2.24
+torch>=2.1
