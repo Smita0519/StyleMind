@@ -222,6 +222,7 @@ def predict(image_path, return_segmentation=False):
         "texture_confidence": round(float(texture_pred[0][texture_idx]), 4),
         "season": _idx_to_season[season_idx],
         "season_confidence": round(float(season_pred[0][season_idx]), 4),
+        "season_probs": {_idx_to_season[i]: round(float(p), 4) for i, p in enumerate(season_pred[0])},
         "dominant_colors": dominant_colors,
         "mask_found": seg["mask_found"],
     }
