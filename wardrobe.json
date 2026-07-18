@@ -1,0 +1,1036 @@
+[
+  {
+    "category": "Shorts",
+    "category_confidence": 0.9811,
+    "texture": "graphic",
+    "texture_confidence": 0.671,
+    "season": "summer",
+    "season_confidence": 0.9577,
+    "season_probs": {
+      "all-season": 0.0234,
+      "fall": 0.0178,
+      "summer": 0.9577,
+      "winter": 0.0011
+    },
+    "dominant_colors": [
+      "#ab7132",
+      "#5c5f63",
+      "#c9b18f"
+    ],
+    "mask_found": false,
+    "id": 1,
+    "filename": "IMG_7734.JPG"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.6272,
+    "texture": "solid",
+    "texture_confidence": 0.5893,
+    "season": "winter",
+    "season_confidence": 0.4885,
+    "season_probs": {
+      "all-season": 0.1796,
+      "fall": 0.0869,
+      "summer": 0.245,
+      "winter": 0.4885
+    },
+    "dominant_colors": [
+      "#b7ccc9",
+      "#834c25",
+      "#a97245"
+    ],
+    "mask_found": true,
+    "id": 2,
+    "filename": "IMG_7737.JPG"
+  },
+  {
+    "category": "Skirt",
+    "category_confidence": 0.4749,
+    "texture": "solid",
+    "texture_confidence": 0.5287,
+    "season": "summer",
+    "season_confidence": 0.7949,
+    "season_probs": {
+      "all-season": 0.1762,
+      "fall": 0.0237,
+      "summer": 0.7949,
+      "winter": 0.0052
+    },
+    "dominant_colors": [
+      "#b4afa5",
+      "#b2783f",
+      "#7d4b20"
+    ],
+    "mask_found": true,
+    "id": 3,
+    "filename": "IMG_7733.JPG"
+  },
+  {
+    "category": "Skirt",
+    "category_confidence": 0.6228,
+    "texture": "checkered",
+    "texture_confidence": 0.4589,
+    "season": "summer",
+    "season_confidence": 0.838,
+    "season_probs": {
+      "all-season": 0.134,
+      "fall": 0.0214,
+      "summer": 0.838,
+      "winter": 0.0066
+    },
+    "dominant_colors": [
+      "#d2bfac",
+      "#c5ad9d",
+      "#dfd5be"
+    ],
+    "mask_found": true,
+    "id": 4,
+    "filename": "IMG_7732.JPG"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.5695,
+    "texture": "embroidered",
+    "texture_confidence": 0.3424,
+    "season": "summer",
+    "season_confidence": 0.3215,
+    "season_probs": {
+      "all-season": 0.1856,
+      "fall": 0.2266,
+      "summer": 0.3215,
+      "winter": 0.2664
+    },
+    "dominant_colors": [
+      "#e1d4c2",
+      "#b09486",
+      "#6e2527"
+    ],
+    "mask_found": true,
+    "id": 5,
+    "filename": "IMG_7736.JPG"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.6889,
+    "texture": "embroidered",
+    "texture_confidence": 0.4117,
+    "season": "winter",
+    "season_confidence": 0.7035,
+    "season_probs": {
+      "all-season": 0.1356,
+      "fall": 0.1332,
+      "summer": 0.0276,
+      "winter": 0.7035
+    },
+    "dominant_colors": [
+      "#a5a8b3",
+      "#80858f",
+      "#484b53"
+    ],
+    "mask_found": true,
+    "id": 6,
+    "filename": "20260703_181957.jpg"
+  },
+  {
+    "category": "Blazer",
+    "category_confidence": 0.2255,
+    "texture": "solid",
+    "texture_confidence": 0.5418,
+    "season": "all-season",
+    "season_confidence": 0.3528,
+    "season_probs": {
+      "all-season": 0.3528,
+      "fall": 0.3246,
+      "summer": 0.1835,
+      "winter": 0.1392
+    },
+    "dominant_colors": [
+      "#eeeae5",
+      "#606564",
+      "#a6a4a7"
+    ],
+    "mask_found": true,
+    "id": 7,
+    "filename": "20260703_181814.jpg"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.7699,
+    "texture": "embroidered",
+    "texture_confidence": 0.6172,
+    "season": "winter",
+    "season_confidence": 0.7758,
+    "season_probs": {
+      "all-season": 0.0244,
+      "fall": 0.1989,
+      "summer": 0.0009,
+      "winter": 0.7758
+    },
+    "dominant_colors": [
+      "#7d7b79",
+      "#a29d9c",
+      "#534f53"
+    ],
+    "mask_found": true,
+    "id": 8,
+    "filename": "20260703_181403.jpg"
+  },
+  {
+    "category": "Skirt",
+    "category_confidence": 0.9913,
+    "texture": "pleated",
+    "texture_confidence": 0.4481,
+    "season": "summer",
+    "season_confidence": 0.6407,
+    "season_probs": {
+      "all-season": 0.2283,
+      "fall": 0.1305,
+      "summer": 0.6407,
+      "winter": 0.0004
+    },
+    "dominant_colors": [
+      "#ada597",
+      "#cdc3b8",
+      "#8a877e"
+    ],
+    "mask_found": true,
+    "id": 9,
+    "filename": "20260703_180826.jpg"
+  },
+  {
+    "category": "Dress",
+    "category_confidence": 0.994,
+    "texture": "solid",
+    "texture_confidence": 0.446,
+    "season": "summer",
+    "season_confidence": 0.6411,
+    "season_probs": {
+      "all-season": 0.2527,
+      "fall": 0.1023,
+      "summer": 0.6411,
+      "winter": 0.0038
+    },
+    "dominant_colors": [
+      "#8e8d56",
+      "#6a6b39",
+      "#414218"
+    ],
+    "mask_found": true,
+    "id": 10,
+    "filename": "20260703_180607.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9973,
+    "texture": "solid",
+    "texture_confidence": 0.7934,
+    "season": "summer",
+    "season_confidence": 0.4559,
+    "season_probs": {
+      "all-season": 0.3848,
+      "fall": 0.1488,
+      "summer": 0.4559,
+      "winter": 0.0106
+    },
+    "dominant_colors": [
+      "#2e2a2f",
+      "#232024",
+      "#b2b3bb"
+    ],
+    "mask_found": true,
+    "id": 11,
+    "filename": "20260703_180403.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9998,
+    "texture": "solid",
+    "texture_confidence": 0.4876,
+    "season": "summer",
+    "season_confidence": 0.9476,
+    "season_probs": {
+      "all-season": 0.0491,
+      "fall": 0.002,
+      "summer": 0.9476,
+      "winter": 0.0014
+    },
+    "dominant_colors": [
+      "#9e7f6b",
+      "#886b57",
+      "#868a97"
+    ],
+    "mask_found": true,
+    "id": 12,
+    "filename": "20260703_180350.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.9996,
+    "texture": "striped",
+    "texture_confidence": 0.8174,
+    "season": "summer",
+    "season_confidence": 0.9708,
+    "season_probs": {
+      "all-season": 0.0228,
+      "fall": 0.0047,
+      "summer": 0.9708,
+      "winter": 0.0017
+    },
+    "dominant_colors": [
+      "#a0a9c3",
+      "#8995ae",
+      "#3d4656"
+    ],
+    "mask_found": true,
+    "id": 13,
+    "filename": "20260703_180314.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.7741,
+    "texture": "solid",
+    "texture_confidence": 0.9541,
+    "season": "summer",
+    "season_confidence": 0.6186,
+    "season_probs": {
+      "all-season": 0.174,
+      "fall": 0.0234,
+      "summer": 0.6186,
+      "winter": 0.184
+    },
+    "dominant_colors": [
+      "#899587",
+      "#748373",
+      "#404b3f"
+    ],
+    "mask_found": true,
+    "id": 14,
+    "filename": "20260703_180105.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9998,
+    "texture": "graphic",
+    "texture_confidence": 0.9636,
+    "season": "summer",
+    "season_confidence": 0.9923,
+    "season_probs": {
+      "all-season": 0.0074,
+      "fall": 0.0001,
+      "summer": 0.9923,
+      "winter": 0.0002
+    },
+    "dominant_colors": [
+      "#b4d5d7",
+      "#8caead",
+      "#3f5651"
+    ],
+    "mask_found": true,
+    "id": 15,
+    "filename": "20260702_190741.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.6462,
+    "texture": "embroidered",
+    "texture_confidence": 0.5492,
+    "season": "winter",
+    "season_confidence": 0.8304,
+    "season_probs": {
+      "all-season": 0.0859,
+      "fall": 0.0347,
+      "summer": 0.049,
+      "winter": 0.8304
+    },
+    "dominant_colors": [
+      "#74817e",
+      "#4b5751",
+      "#d1e5e1"
+    ],
+    "mask_found": true,
+    "id": 16,
+    "filename": "20260702_185412.jpg"
+  },
+  {
+    "category": "Pants",
+    "category_confidence": 0.9549,
+    "texture": "solid",
+    "texture_confidence": 0.7492,
+    "season": "summer",
+    "season_confidence": 0.5651,
+    "season_probs": {
+      "all-season": 0.343,
+      "fall": 0.0918,
+      "summer": 0.5651,
+      "winter": 0.0001
+    },
+    "dominant_colors": [
+      "#3b7aa5",
+      "#579bc0",
+      "#24577f"
+    ],
+    "mask_found": true,
+    "id": 17,
+    "filename": "20260703_175521.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.8969,
+    "texture": "solid",
+    "texture_confidence": 0.3592,
+    "season": "winter",
+    "season_confidence": 0.8203,
+    "season_probs": {
+      "all-season": 0.0823,
+      "fall": 0.0809,
+      "summer": 0.0166,
+      "winter": 0.8203
+    },
+    "dominant_colors": [
+      "#4c8fb8",
+      "#66aad1",
+      "#2c5e7e"
+    ],
+    "mask_found": true,
+    "id": 18,
+    "filename": "20260703_175637.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.8843,
+    "texture": "checkered",
+    "texture_confidence": 0.9933,
+    "season": "fall",
+    "season_confidence": 0.7113,
+    "season_probs": {
+      "all-season": 0.1177,
+      "fall": 0.7113,
+      "summer": 0.1629,
+      "winter": 0.008
+    },
+    "dominant_colors": [
+      "#537085",
+      "#1a323c",
+      "#a1bace"
+    ],
+    "mask_found": true,
+    "id": 19,
+    "filename": "20260703_180117.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.8926,
+    "texture": "solid",
+    "texture_confidence": 0.6314,
+    "season": "winter",
+    "season_confidence": 0.9184,
+    "season_probs": {
+      "all-season": 0.0429,
+      "fall": 0.0338,
+      "summer": 0.0049,
+      "winter": 0.9184
+    },
+    "dominant_colors": [
+      "#799b92",
+      "#5b7b72",
+      "#2d443b"
+    ],
+    "mask_found": true,
+    "id": 20,
+    "filename": "20260703_193909.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.6297,
+    "texture": "striped",
+    "texture_confidence": 0.8449,
+    "season": "summer",
+    "season_confidence": 0.8649,
+    "season_probs": {
+      "all-season": 0.0793,
+      "fall": 0.0453,
+      "summer": 0.8649,
+      "winter": 0.0105
+    },
+    "dominant_colors": [
+      "#7f8d88",
+      "#5b6761",
+      "#b2c4c2"
+    ],
+    "mask_found": true,
+    "id": 21,
+    "filename": "20260703_194130.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.7036,
+    "texture": "solid",
+    "texture_confidence": 0.8018,
+    "season": "winter",
+    "season_confidence": 0.3838,
+    "season_probs": {
+      "all-season": 0.3473,
+      "fall": 0.1617,
+      "summer": 0.1072,
+      "winter": 0.3838
+    },
+    "dominant_colors": [
+      "#12141a",
+      "#1a1c23",
+      "#949496"
+    ],
+    "mask_found": true,
+    "id": 22,
+    "filename": "20260704_121054.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.9418,
+    "texture": "striped",
+    "texture_confidence": 0.8976,
+    "season": "summer",
+    "season_confidence": 0.5107,
+    "season_probs": {
+      "all-season": 0.204,
+      "fall": 0.1403,
+      "summer": 0.5107,
+      "winter": 0.1451
+    },
+    "dominant_colors": [
+      "#79899e",
+      "#96a5ba",
+      "#546378"
+    ],
+    "mask_found": true,
+    "id": 23,
+    "filename": "20260704_120405.jpg"
+  },
+  {
+    "category": "Pants",
+    "category_confidence": 0.9435,
+    "texture": "solid",
+    "texture_confidence": 0.8697,
+    "season": "all-season",
+    "season_confidence": 0.6188,
+    "season_probs": {
+      "all-season": 0.6188,
+      "fall": 0.2967,
+      "summer": 0.0839,
+      "winter": 0.0006
+    },
+    "dominant_colors": [
+      "#503931",
+      "#402e28",
+      "#b3bcc9"
+    ],
+    "mask_found": true,
+    "id": 24,
+    "filename": "20260704_120719.jpg"
+  },
+  {
+    "category": "Pants",
+    "category_confidence": 0.8589,
+    "texture": "solid",
+    "texture_confidence": 0.7885,
+    "season": "summer",
+    "season_confidence": 0.4955,
+    "season_probs": {
+      "all-season": 0.4382,
+      "fall": 0.0606,
+      "summer": 0.4955,
+      "winter": 0.0057
+    },
+    "dominant_colors": [
+      "#c6bba5",
+      "#b9ad98",
+      "#726753"
+    ],
+    "mask_found": true,
+    "id": 25,
+    "filename": "20260704_121823.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.8636,
+    "texture": "checkered",
+    "texture_confidence": 0.8953,
+    "season": "fall",
+    "season_confidence": 0.6933,
+    "season_probs": {
+      "all-season": 0.1523,
+      "fall": 0.6933,
+      "summer": 0.1232,
+      "winter": 0.0312
+    },
+    "dominant_colors": [
+      "#9d918a",
+      "#756b65",
+      "#493f3a"
+    ],
+    "mask_found": true,
+    "id": 26,
+    "filename": "20260704_122228.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.7799,
+    "texture": "solid",
+    "texture_confidence": 0.4983,
+    "season": "winter",
+    "season_confidence": 0.3988,
+    "season_probs": {
+      "all-season": 0.3345,
+      "fall": 0.1998,
+      "summer": 0.0669,
+      "winter": 0.3988
+    },
+    "dominant_colors": [
+      "#607169",
+      "#485852",
+      "#252625"
+    ],
+    "mask_found": true,
+    "id": 27,
+    "filename": "20260704_123117.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.5475,
+    "texture": "solid",
+    "texture_confidence": 0.7685,
+    "season": "summer",
+    "season_confidence": 0.9034,
+    "season_probs": {
+      "all-season": 0.0761,
+      "fall": 0.0065,
+      "summer": 0.9034,
+      "winter": 0.0139
+    },
+    "dominant_colors": [
+      "#e2e9f1",
+      "#cad0d9",
+      "#212e60"
+    ],
+    "mask_found": false,
+    "id": 28,
+    "filename": "20260704_122757.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.5937,
+    "texture": "solid",
+    "texture_confidence": 0.6306,
+    "season": "winter",
+    "season_confidence": 0.3853,
+    "season_probs": {
+      "all-season": 0.2428,
+      "fall": 0.0611,
+      "summer": 0.3108,
+      "winter": 0.3853
+    },
+    "dominant_colors": [
+      "#c6c7c1",
+      "#b0b1aa",
+      "#797670"
+    ],
+    "mask_found": true,
+    "id": 29,
+    "filename": "highneck1.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.9977,
+    "texture": "striped",
+    "texture_confidence": 0.6149,
+    "season": "summer",
+    "season_confidence": 0.9548,
+    "season_probs": {
+      "all-season": 0.034,
+      "fall": 0.0082,
+      "summer": 0.9548,
+      "winter": 0.003
+    },
+    "dominant_colors": [
+      "#778689",
+      "#8c9a9d",
+      "#475356"
+    ],
+    "mask_found": true,
+    "id": 30,
+    "filename": "shirt.jpg"
+  },
+  {
+    "category": "Pants",
+    "category_confidence": 0.6537,
+    "texture": "solid",
+    "texture_confidence": 0.8988,
+    "season": "all-season",
+    "season_confidence": 0.4464,
+    "season_probs": {
+      "all-season": 0.4464,
+      "fall": 0.4146,
+      "summer": 0.1382,
+      "winter": 0.0009
+    },
+    "dominant_colors": [
+      "#1a1b1d",
+      "#23262a",
+      "#85837b"
+    ],
+    "mask_found": true,
+    "id": 31,
+    "filename": "joggers2.jpg"
+  },
+  {
+    "category": "Pants",
+    "category_confidence": 0.8164,
+    "texture": "solid",
+    "texture_confidence": 0.7584,
+    "season": "fall",
+    "season_confidence": 0.4543,
+    "season_probs": {
+      "all-season": 0.3773,
+      "fall": 0.4543,
+      "summer": 0.1644,
+      "winter": 0.004
+    },
+    "dominant_colors": [
+      "#1d1f22",
+      "#5f5f5a",
+      "#b4b1a6"
+    ],
+    "mask_found": true,
+    "id": 32,
+    "filename": "joggers1.jpg"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.9987,
+    "texture": "embroidered",
+    "texture_confidence": 0.6596,
+    "season": "winter",
+    "season_confidence": 0.9997,
+    "season_probs": {
+      "all-season": 0.0001,
+      "fall": 0.0002,
+      "summer": 0.0,
+      "winter": 0.9997
+    },
+    "dominant_colors": [
+      "#c4c4be",
+      "#9a9b95",
+      "#50514c"
+    ],
+    "mask_found": true,
+    "id": 33,
+    "filename": "hoodie1.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.9834,
+    "texture": "solid",
+    "texture_confidence": 0.9471,
+    "season": "winter",
+    "season_confidence": 0.9677,
+    "season_probs": {
+      "all-season": 0.0101,
+      "fall": 0.001,
+      "summer": 0.0212,
+      "winter": 0.9677
+    },
+    "dominant_colors": [
+      "#d3d0c9",
+      "#949590",
+      "#6d6d68"
+    ],
+    "mask_found": true,
+    "id": 34,
+    "filename": "jacket2.jpg"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.9368,
+    "texture": "solid",
+    "texture_confidence": 0.5395,
+    "season": "winter",
+    "season_confidence": 0.9806,
+    "season_probs": {
+      "all-season": 0.0099,
+      "fall": 0.009,
+      "summer": 0.0005,
+      "winter": 0.9806
+    },
+    "dominant_colors": [
+      "#2a3230",
+      "#37423e",
+      "#b1b2a7"
+    ],
+    "mask_found": true,
+    "id": 35,
+    "filename": "jacket3.jpg"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.8938,
+    "texture": "solid",
+    "texture_confidence": 0.462,
+    "season": "winter",
+    "season_confidence": 0.9505,
+    "season_probs": {
+      "all-season": 0.0154,
+      "fall": 0.0256,
+      "summer": 0.0085,
+      "winter": 0.9505
+    },
+    "dominant_colors": [
+      "#7e8b8c",
+      "#b1aaa2",
+      "#556768"
+    ],
+    "mask_found": true,
+    "id": 36,
+    "filename": "cardigan.jpg"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.911,
+    "texture": "graphic",
+    "texture_confidence": 0.5844,
+    "season": "winter",
+    "season_confidence": 0.9973,
+    "season_probs": {
+      "all-season": 0.0018,
+      "fall": 0.0007,
+      "summer": 0.0001,
+      "winter": 0.9973
+    },
+    "dominant_colors": [
+      "#1a2134",
+      "#232c44",
+      "#a6a2a3"
+    ],
+    "mask_found": true,
+    "id": 37,
+    "filename": "hoodie2.jpg"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.7843,
+    "texture": "checkered",
+    "texture_confidence": 0.8439,
+    "season": "winter",
+    "season_confidence": 0.6873,
+    "season_probs": {
+      "all-season": 0.0395,
+      "fall": 0.2572,
+      "summer": 0.016,
+      "winter": 0.6873
+    },
+    "dominant_colors": [
+      "#222324",
+      "#514b44",
+      "#cdcac2"
+    ],
+    "mask_found": true,
+    "id": 38,
+    "filename": "jacket1.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.5515,
+    "texture": "solid",
+    "texture_confidence": 0.4816,
+    "season": "winter",
+    "season_confidence": 0.547,
+    "season_probs": {
+      "all-season": 0.1387,
+      "fall": 0.2719,
+      "summer": 0.0424,
+      "winter": 0.547
+    },
+    "dominant_colors": [
+      "#131415",
+      "#1b1e23",
+      "#7b7c7e"
+    ],
+    "mask_found": true,
+    "id": 39,
+    "filename": "coat3.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.7348,
+    "texture": "checkered",
+    "texture_confidence": 0.7048,
+    "season": "summer",
+    "season_confidence": 0.9171,
+    "season_probs": {
+      "all-season": 0.0596,
+      "fall": 0.016,
+      "summer": 0.9171,
+      "winter": 0.0073
+    },
+    "dominant_colors": [
+      "#91a2b1",
+      "#c3c7cd",
+      "#25659e"
+    ],
+    "mask_found": true,
+    "id": 40,
+    "filename": "t-shirt2.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.5134,
+    "texture": "checkered",
+    "texture_confidence": 0.9145,
+    "season": "fall",
+    "season_confidence": 0.7681,
+    "season_probs": {
+      "all-season": 0.1439,
+      "fall": 0.7681,
+      "summer": 0.0768,
+      "winter": 0.0112
+    },
+    "dominant_colors": [
+      "#665442",
+      "#836f5b",
+      "#483728"
+    ],
+    "mask_found": true,
+    "id": 41,
+    "filename": "coat2.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9564,
+    "texture": "solid",
+    "texture_confidence": 0.8872,
+    "season": "summer",
+    "season_confidence": 0.883,
+    "season_probs": {
+      "all-season": 0.1012,
+      "fall": 0.0134,
+      "summer": 0.883,
+      "winter": 0.0024
+    },
+    "dominant_colors": [
+      "#103273",
+      "#63a2c9",
+      "#c13f34"
+    ],
+    "mask_found": true,
+    "id": 42,
+    "filename": "t-shirt1.jpg"
+  },
+  {
+    "category": "Shorts",
+    "category_confidence": 0.9884,
+    "texture": "solid",
+    "texture_confidence": 0.9847,
+    "season": "summer",
+    "season_confidence": 0.9988,
+    "season_probs": {
+      "all-season": 0.001,
+      "fall": 0.0002,
+      "summer": 0.9988,
+      "winter": 0.0
+    },
+    "dominant_colors": [
+      "#b1a98f",
+      "#989077",
+      "#675e48"
+    ],
+    "mask_found": true,
+    "id": 43,
+    "filename": "shorts1.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9806,
+    "texture": "solid",
+    "texture_confidence": 0.877,
+    "season": "summer",
+    "season_confidence": 0.5651,
+    "season_probs": {
+      "all-season": 0.0776,
+      "fall": 0.0085,
+      "summer": 0.5651,
+      "winter": 0.3487
+    },
+    "dominant_colors": [
+      "#7f776e",
+      "#6b635b",
+      "#ced0cb"
+    ],
+    "mask_found": true,
+    "id": 44,
+    "filename": "tanktop2.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9549,
+    "texture": "solid",
+    "texture_confidence": 0.9153,
+    "season": "summer",
+    "season_confidence": 0.3947,
+    "season_probs": {
+      "all-season": 0.2764,
+      "fall": 0.2718,
+      "summer": 0.3947,
+      "winter": 0.0571
+    },
+    "dominant_colors": [
+      "#444444",
+      "#525353",
+      "#cfcec2"
+    ],
+    "mask_found": true,
+    "id": 45,
+    "filename": "tanktop1.jpg"
+  },
+  {
+    "category": "Shirt",
+    "category_confidence": 0.7496,
+    "texture": "solid",
+    "texture_confidence": 0.9725,
+    "season": "winter",
+    "season_confidence": 0.5727,
+    "season_probs": {
+      "all-season": 0.1778,
+      "fall": 0.0255,
+      "summer": 0.2239,
+      "winter": 0.5727
+    },
+    "dominant_colors": [
+      "#c6c3b4",
+      "#a5a292",
+      "#716b5b"
+    ],
+    "mask_found": true,
+    "id": 46,
+    "filename": "coat1.jpg"
+  },
+  {
+    "category": "Top",
+    "category_confidence": 0.9948,
+    "texture": "solid",
+    "texture_confidence": 0.6875,
+    "season": "summer",
+    "season_confidence": 0.6874,
+    "season_probs": {
+      "all-season": 0.2071,
+      "fall": 0.1039,
+      "summer": 0.6874,
+      "winter": 0.0016
+    },
+    "dominant_colors": [
+      "#191b1c",
+      "#2b2f33",
+      "#d0cdc1"
+    ],
+    "mask_found": true,
+    "id": 47,
+    "filename": "tanktop3.jpg"
+  }
+]

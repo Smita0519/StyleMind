@@ -17,7 +17,8 @@ SEASONS = ["all-season", "fall", "summer", "winter"]
 
 TOP_HALF = {"Shirt", "Top", "Warmwear"}
 BOTTOM_HALF = {"Formal_Pant", "Pants", "Shorts", "Skirt"}
-
+OUTERWEAR = {"Blazer", "Jacket"}
+FULL_BODY = {"Dress"}
 
 def build_feature_vector(item):
     """
@@ -72,3 +73,14 @@ def pair_top_and_bottom(filtered_wardrobe, k=5):
         matches = find_matches(top, bottoms, k=k)
         pairings.append({"top": top, "matches": matches})
     return pairings
+
+def get_dresses(filtered_wardrobe):
+    """Returns all Dress items from the filtered wardrobe — these stand alone,
+    never paired with a bottom."""
+    return [i for i in filtered_wardrobe if i["category"] in FULL_BODY]
+
+
+def get_jackets(filtered_wardrobe):
+    """Returns all Blazer/Jacket items from the filtered wardrobe — used as
+    an optional add-on suggestion for any outfit."""
+    return [i for i in filtered_wardrobe if i["category"] in OUTERWEAR]
