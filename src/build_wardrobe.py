@@ -10,7 +10,8 @@ import json
 from pathlib import Path
 from src.predict import predict
 
-IMAGE_FOLDER = r"G:\My Drive\StyleMind_wardrobe"
+IMAGE_FOLDER = '/content/drive/MyDrive/StyleMind_wardrobe'   #for colab
+# r"G:\My Drive\StyleMind_wardrobe" for vscode  
 OUTPUT_FILE = "wardrobe.json"
 VALID_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
