@@ -53,32 +53,40 @@ def score_hue_pair(h1, h2):
     return 0.4
 
 
-def score_color_pair(hex1, hex2):
+NEUTRAL_FALLBACK_SCORES = {
+    "safe": 0.9,
+    "bold": 0.65,
+}
+
+
+def score_color_pair(hex1, hex2, style="safe"):
     """
     Main entry point. Scores one color from item A against one color
     from item B. Returns 0-1, higher = more harmonious.
+
+    style: "safe" (default) keeps neutral pairings scored high (0.9),
+           matching most users' everyday preference. "bold" lowers the
+           neutral fallback so genuine hue-matched pairings (complementary/
+           analogous/triadic) can outrank neutral-safe pairings, surfacing
+           more colorful/eye-catching combinations.
     """
     if is_neutral(hex1) or is_neutral(hex2):
-        return 0.9  # neutrals pair well with almost anything
+        return NEUTRAL_FALLBACK_SCORES.get(style, 0.9)
 
     h1, _, _ = hex_to_hsl(hex1)
     h2, _, _ = hex_to_hsl(hex2)
     return score_hue_pair(h1, h2)
 
 
-def score_item_pair(colors_a, colors_b):
+def score_item_pair(colors_a, colors_b, style="safe"):
     """
-    Scores two items' full dominant_colors lists (each a list of hex
-    strings) against each other. Uses the BEST-scoring pair of colors
-    across both lists -- i.e. if any color from item A harmonizes well
-    with any color from item B, that's the pairing score, since a
-    dominant_colors list contains the item's main colors and only one
-    strong match is needed to call the pairing harmonious.
+    Scores two items' full dominant_colors lists against each other.
+    Uses the BEST-scoring pair of colors across both lists.
     """
     best = 0.0
     for ca in colors_a:
         for cb in colors_b:
-            s = score_color_pair(ca, cb)
+            s = score_color_pair(ca, cb, style=style)
             if s > best:
                 best = s
     return round(best, 4)
