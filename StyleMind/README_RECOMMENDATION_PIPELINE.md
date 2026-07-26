@@ -12,7 +12,7 @@ outfit pairings suited to the current weather and occasion.
 Pipeline order:
 
 ```
-filter_wardrobe()  →  pair_top_and_bottom() / get_dresses() / get_jackets()
+filter_wardrobe()  →  pair_top_and_bottom() / get_dresses() / get_outerwear()
     (weather +           (KNN nearest-neighbor
      intent rules)        matching on category +
                            season features)
@@ -65,7 +65,7 @@ Runs before KNN. Two rules combined:
   one-hot + 4-dim `season_probs`.
 - `pair_top_and_bottom()`: for every top-half item, finds its k
   nearest bottom-half items by Euclidean distance on the feature vector.
-- `get_dresses()` / `get_jackets()`: pulls out full-body items (Dress)
+- `get_dresses()` / `get_outerwear()`: pulls out full-body items (Dress)
   and outerwear (Blazer/Jacket) for separate handling (see below).
 
 ### 4. `color_harmony.py` — color-wheel compatibility scoring
