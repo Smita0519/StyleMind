@@ -1,18 +1,10 @@
-"""
-StyleMind — build a wardrobe list from a folder of real images.
-
-Runs predict() on every image in a folder, saves the results as a
-wardrobe.json file (list of item dicts) ready to feed into
-get_recommendations().
-"""
-
 import json
 from pathlib import Path
 from src.predict import predict
 
-IMAGE_FOLDER = '/content/drive/MyDrive/StyleMind_wardrobe'   #for colab
-# r"G:\My Drive\StyleMind_wardrobe" for vscode  
+IMAGE_FOLDER = r"H:\My Drive\StyleMind_wardrobe"
 OUTPUT_FILE = "wardrobe.json"
+PROCESSED_FOLDER = Path("processed_images")   # NEW: local folder for bg-removed thumbnails
 VALID_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
 
@@ -27,18 +19,23 @@ def build_wardrobe():
     if not image_paths:
         raise ValueError(f"No images found in '{IMAGE_FOLDER}'.")
 
+    PROCESSED_FOLDER.mkdir(exist_ok=True)   # NEW
+
     wardrobe = []
     for i, path in enumerate(image_paths, start=1):
         print(f"[{i}/{len(image_paths)}] Predicting {path.name}...")
-        result = predict(str(path))
+        result, seg = predict(str(path), return_segmentation=True)   # CHANGED
         result["id"] = i
         result["filename"] = path.name
         wardrobe.append(result)
+
+        seg["final"].save(PROCESSED_FOLDER / path.name)   # NEW: save bg-removed thumbnail
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(wardrobe, f, indent=2)
 
     print(f"\nSaved {len(wardrobe)} items to {OUTPUT_FILE}")
+    print(f"Saved background-removed thumbnails to {PROCESSED_FOLDER}/")
     return wardrobe
 
 

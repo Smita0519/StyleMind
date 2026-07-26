@@ -10,7 +10,9 @@ from PIL import Image
 from src.recommend.recommend import get_recommendations
 
 WARDROBE_JSON = "wardrobe.json"
-IMAGE_FOLDER = "/content/drive/MyDrive/StyleMind_wardrobe"  # update path as needed
+IMAGE_FOLDER = "processed_images"   
+# IMAGE_FOLDER = r"H:\My Drive\StyleMind_wardrobe"  #for vscode
+#"/content/drive/MyDrive/StyleMind_wardrobe"  # update path as needed
 TOP_K = 5
 
 VALID_INTENTS = {"Formal", "Casual", "Picnic", "Travel"}
@@ -47,11 +49,11 @@ def visualize():
         print("No recommendations found — check filters (temp/intent) against your wardrobe categories.")
         return
 
-    fig, axes = plt.subplots(len(results), 3, figsize=(9, 3 * len(results)))
+    fig, axes = plt.subplots(len(results), 3, figsize=(9, 3.3 * len(results)))
     if len(results) == 1:
         axes = [axes]
 
-    fig.suptitle(f"Recommendations for {intent} at {temp_c}°C ({style} style)", fontsize=14)
+    fig.suptitle(f"Recommendations for {intent} at {temp_c}°C ({style} style)", fontsize=14, y=0.99)
 
     for row, r in enumerate(results):
         if r["top"] is not None:
@@ -68,14 +70,13 @@ def visualize():
 
         if r["jacket"] is not None:
             axes[row][2].imshow(load_img(r["jacket"]["filename"]))
-            axes[row][2].set_title(f"+ JACKET\ncolor fit: {r['jacket_color_score']}")
+            axes[row][2].set_title(f"+ outerwear")
         else:
-            axes[row][2].set_title("(no jacket suggested)")
+            axes[row][2].set_title("(no outerwear suggested)")
         axes[row][2].axis("off")
 
-    plt.tight_layout()
-    plt.savefig("/content/output.png", bbox_inches="tight")
-    plt.close()
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
 
 
 if __name__ == "__main__":
