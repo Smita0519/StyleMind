@@ -13,9 +13,9 @@
       "winter": 0.9997
     },
     "dominant_colors": [
-      "#c3c4bd",
-      "#9a9a94",
-      "#4f4f4b"
+      "#c4c4be",
+      "#9a9b94",
+      "#51514d"
     ],
     "mask_found": true,
     "id": 1,
@@ -35,9 +35,9 @@
       "winter": 0.004
     },
     "dominant_colors": [
-      "#1d1e22",
-      "#605f5b",
-      "#b1aea4"
+      "#1d1f22",
+      "#5f5e59",
+      "#aaa89e"
     ],
     "mask_found": true,
     "id": 2,
@@ -57,9 +57,9 @@
       "winter": 0.0016
     },
     "dominant_colors": [
-      "#1a1b1d",
-      "#2c3034",
-      "#ceccbf"
+      "#191b1c",
+      "#2b2f33",
+      "#cfcdc0"
     ],
     "mask_found": true,
     "id": 3,
@@ -79,9 +79,9 @@
       "winter": 0.0057
     },
     "dominant_colors": [
-      "#c6bba5",
+      "#c6bca5",
       "#b9ae98",
-      "#5f5541"
+      "#6d624f"
     ],
     "mask_found": true,
     "id": 4,
@@ -101,9 +101,9 @@
       "winter": 0.0004
     },
     "dominant_colors": [
-      "#aea698",
-      "#cdc4b8",
-      "#8e8a80"
+      "#aba495",
+      "#cbc2b6",
+      "#87837b"
     ],
     "mask_found": true,
     "id": 5,
@@ -123,35 +123,13 @@
       "winter": 0.6873
     },
     "dominant_colors": [
-      "#222323",
-      "#514c45",
-      "#cfcdc5"
+      "#212323",
+      "#514c44",
+      "#cbc8c1"
     ],
     "mask_found": true,
     "id": 6,
     "filename": "jacket1.jpg"
-  },
-  {
-    "category": "Jacket",
-    "category_confidence": 0.9834,
-    "texture": "solid",
-    "texture_confidence": 0.9471,
-    "season": "winter",
-    "season_confidence": 0.9677,
-    "season_probs": {
-      "all-season": 0.0101,
-      "fall": 0.001,
-      "summer": 0.0212,
-      "winter": 0.9677
-    },
-    "dominant_colors": [
-      "#91928d",
-      "#d2d0c9",
-      "#65655f"
-    ],
-    "mask_found": true,
-    "id": 7,
-    "filename": "jacket2.jpg"
   },
   {
     "category": "Jacket",
@@ -167,12 +145,12 @@
       "winter": 0.9806
     },
     "dominant_colors": [
-      "#293230",
-      "#37423e",
-      "#b8bbb1"
+      "#2a3230",
+      "#37423f",
+      "#a8a99c"
     ],
     "mask_found": true,
-    "id": 8,
+    "id": 7,
     "filename": "jacket3.jpg"
   },
   {
@@ -191,10 +169,10 @@
     "dominant_colors": [
       "#1a2134",
       "#222c43",
-      "#9c9897"
+      "#999699"
     ],
     "mask_found": true,
-    "id": 9,
+    "id": 8,
     "filename": "t40.jpg"
   },
   {
@@ -211,35 +189,13 @@
       "winter": 0.9505
     },
     "dominant_colors": [
-      "#7d8b8b",
-      "#b2a9a1",
-      "#556668"
+      "#7e8c8c",
+      "#b3aba1",
+      "#56686a"
     ],
     "mask_found": true,
-    "id": 10,
+    "id": 9,
     "filename": "t31.jpg"
-  },
-  {
-    "category": "Shirt",
-    "category_confidence": 0.8843,
-    "texture": "checkered",
-    "texture_confidence": 0.9933,
-    "season": "fall",
-    "season_confidence": 0.7113,
-    "season_probs": {
-      "all-season": 0.1177,
-      "fall": 0.7113,
-      "summer": 0.1629,
-      "winter": 0.008
-    },
-    "dominant_colors": [
-      "#527084",
-      "#1a323d",
-      "#a2bbce"
-    ],
-    "mask_found": true,
-    "id": 11,
-    "filename": "t17.jpg"
   },
   {
     "category": "Top",
@@ -255,12 +211,12 @@
       "winter": 0.0571
     },
     "dominant_colors": [
-      "#444444",
-      "#525253",
-      "#cecdc0"
+      "#444445",
+      "#535454",
+      "#cfcec1"
     ],
     "mask_found": true,
-    "id": 12,
+    "id": 10,
     "filename": "tanktop1.jpg"
   },
   {
@@ -277,12 +233,12 @@
       "winter": 0.3487
     },
     "dominant_colors": [
-      "#7f776e",
-      "#6b635b",
+      "#7e766e",
+      "#69625a",
       "#cdcfca"
     ],
     "mask_found": true,
-    "id": 13,
+    "id": 11,
     "filename": "tanktop2.jpg"
   },
   {
@@ -299,12 +255,12 @@
       "winter": 0.0038
     },
     "dominant_colors": [
-      "#8e8d56",
-      "#6a6c39",
-      "#404117"
+      "#8f8d56",
+      "#6a6b39",
+      "#3f3f16"
     ],
     "mask_found": true,
-    "id": 14,
+    "id": 12,
     "filename": "t21.jpg"
   },
   {
@@ -321,12 +277,12 @@
       "winter": 0.003
     },
     "dominant_colors": [
-      "#8b999c",
-      "#768588",
-      "#485356"
+      "#788689",
+      "#8c9a9d",
+      "#485457"
     ],
     "mask_found": true,
-    "id": 15,
+    "id": 13,
     "filename": "shirt.jpg"
   },
   {
@@ -343,12 +299,12 @@
       "winter": 0.0
     },
     "dominant_colors": [
-      "#999178",
-      "#b2aa90",
-      "#69614b"
+      "#b0a88e",
+      "#968e76",
+      "#665e48"
     ],
     "mask_found": true,
-    "id": 16,
+    "id": 14,
     "filename": "shorts1.jpg"
   },
   {
@@ -367,10 +323,10 @@
     "dominant_colors": [
       "#9e7f6a",
       "#876a56",
-      "#858a97"
+      "#868a98"
     ],
     "mask_found": true,
-    "id": 17,
+    "id": 15,
     "filename": "t19.jpg"
   },
   {
@@ -389,10 +345,10 @@
     "dominant_colors": [
       "#1a1b1d",
       "#23262a",
-      "#8b8982"
+      "#8f8d85"
     ],
     "mask_found": true,
-    "id": 18,
+    "id": 16,
     "filename": "joggers2.jpg"
   },
   {
@@ -409,12 +365,12 @@
       "winter": 0.0106
     },
     "dominant_colors": [
-      "#2e2b2f",
-      "#232024",
-      "#b1b2ba"
+      "#2f2b30",
+      "#242025",
+      "#b1b2b9"
     ],
     "mask_found": true,
-    "id": 19,
+    "id": 17,
     "filename": "t20.jpg"
   },
   {
@@ -431,12 +387,12 @@
       "winter": 0.9184
     },
     "dominant_colors": [
-      "#7a9c92",
-      "#5c7c73",
-      "#2b4239"
+      "#799b92",
+      "#5b7b72",
+      "#2d443b"
     ],
     "mask_found": true,
-    "id": 20,
+    "id": 18,
     "filename": "t24.jpg"
   },
   {
@@ -453,12 +409,12 @@
       "winter": 0.7035
     },
     "dominant_colors": [
-      "#a5a9b4",
-      "#818690",
-      "#45484f"
+      "#a6a9b4",
+      "#858a95",
+      "#57595f"
     ],
     "mask_found": true,
-    "id": 21,
+    "id": 19,
     "filename": "t23.jpg"
   },
   {
@@ -475,12 +431,12 @@
       "winter": 0.0105
     },
     "dominant_colors": [
-      "#7c8b85",
-      "#58645d",
-      "#b1c2c0"
+      "#7e8d87",
+      "#5b6760",
+      "#b2c3c1"
     ],
     "mask_found": true,
-    "id": 22,
+    "id": 20,
     "filename": "t25.jpg"
   },
   {
@@ -497,12 +453,12 @@
       "winter": 0.0006
     },
     "dominant_colors": [
-      "#503931",
-      "#402e28",
-      "#b5bfcd"
+      "#503932",
+      "#412e28",
+      "#b2bcc9"
     ],
     "mask_found": true,
-    "id": 23,
+    "id": 21,
     "filename": "t26.jpg"
   },
   {
@@ -519,12 +475,12 @@
       "winter": 0.3988
     },
     "dominant_colors": [
-      "#607269",
-      "#475751",
-      "#262625"
+      "#607168",
+      "#465650",
+      "#252525"
     ],
     "mask_found": true,
-    "id": 24,
+    "id": 22,
     "filename": "t28.jpg"
   },
   {
@@ -542,34 +498,12 @@
     },
     "dominant_colors": [
       "#d2bfac",
-      "#c4ac9c",
-      "#e0d5be"
+      "#c5ad9d",
+      "#e0d6be"
     ],
     "mask_found": true,
-    "id": 25,
+    "id": 23,
     "filename": "IMG_7732.JPG"
-  },
-  {
-    "category": "Warmwear",
-    "category_confidence": 0.6272,
-    "texture": "solid",
-    "texture_confidence": 0.5893,
-    "season": "winter",
-    "season_confidence": 0.4885,
-    "season_probs": {
-      "all-season": 0.1796,
-      "fall": 0.0869,
-      "summer": 0.245,
-      "winter": 0.4885
-    },
-    "dominant_colors": [
-      "#b6cbc8",
-      "#854e26",
-      "#ac7649"
-    ],
-    "mask_found": true,
-    "id": 26,
-    "filename": "IMG_7737.JPG"
   },
   {
     "category": "Top",
@@ -585,12 +519,12 @@
       "winter": 0.0012
     },
     "dominant_colors": [
-      "#c69d30",
-      "#e1be4f",
-      "#a06c11"
+      "#c49b2e",
+      "#dfbc4d",
+      "#9e6910"
     ],
     "mask_found": true,
-    "id": 27,
+    "id": 24,
     "filename": "t6.jpg"
   },
   {
@@ -607,12 +541,12 @@
       "winter": 0.0012
     },
     "dominant_colors": [
-      "#97333d",
-      "#54151a",
-      "#da969d"
+      "#96323c",
+      "#511419",
+      "#dc99a0"
     ],
     "mask_found": true,
-    "id": 28,
+    "id": 25,
     "filename": "t16.jpg"
   },
   {
@@ -630,11 +564,11 @@
     },
     "dominant_colors": [
       "#2f343e",
-      "#4c515c",
-      "#c6cace"
+      "#4b515b",
+      "#a1a6ad"
     ],
     "mask_found": true,
-    "id": 29,
+    "id": 26,
     "filename": "t8.webp"
   },
   {
@@ -651,12 +585,12 @@
       "winter": 0.0099
     },
     "dominant_colors": [
-      "#9098a3",
-      "#b2bdcd",
-      "#5e6570"
+      "#9097a3",
+      "#b2becd",
+      "#59606c"
     ],
     "mask_found": true,
-    "id": 30,
+    "id": 27,
     "filename": "t10.jpg"
   },
   {
@@ -673,12 +607,12 @@
       "winter": 0.0007
     },
     "dominant_colors": [
-      "#81513a",
-      "#592813",
-      "#e1ddd0"
+      "#82513a",
+      "#582813",
+      "#e2ddd0"
     ],
     "mask_found": true,
-    "id": 31,
+    "id": 28,
     "filename": "t3.jpg"
   },
   {
@@ -695,12 +629,12 @@
       "winter": 0.0001
     },
     "dominant_colors": [
-      "#53575b",
-      "#7d8080",
-      "#252628"
+      "#54585b",
+      "#7d8081",
+      "#27292b"
     ],
     "mask_found": true,
-    "id": 32,
+    "id": 29,
     "filename": "t11.jpg"
   },
   {
@@ -717,15 +651,14 @@
       "winter": 0.0025
     },
     "dominant_colors": [
-      "#522e23",
+      "#532e24",
       "#371b12",
-      "#aba5a3"
+      "#a9a19c"
     ],
     "mask_found": true,
-    "id": 33,
+    "id": 30,
     "filename": "t15.jpg"
   },
-
   {
     "category": "Top",
     "category_confidence": 0.9427,
@@ -740,12 +673,12 @@
       "winter": 0.0001
     },
     "dominant_colors": [
-      "#c5cfe5",
-      "#9ea9c0",
-      "#78829a"
+      "#c4cfe5",
+      "#9ca7be",
+      "#757f97"
     ],
     "mask_found": true,
-    "id": 35,
+    "id": 31,
     "filename": "t7.webp"
   },
   {
@@ -763,11 +696,11 @@
     },
     "dominant_colors": [
       "#f7f7f7",
-      "#e4e3e2",
-      "#cecdca"
+      "#e4e3e3",
+      "#cfcdcb"
     ],
     "mask_found": true,
-    "id": 36,
+    "id": 32,
     "filename": "t2.jpg"
   },
   {
@@ -784,12 +717,12 @@
       "winter": 0.0016
     },
     "dominant_colors": [
-      "#0f0e12",
-      "#1f1e23",
-      "#9d9797"
+      "#111115",
+      "#585555",
+      "#b4afae"
     ],
     "mask_found": true,
-    "id": 37,
+    "id": 33,
     "filename": "t9.jpg"
   },
   {
@@ -806,12 +739,12 @@
       "winter": 0.0005
     },
     "dominant_colors": [
-      "#846346",
-      "#997758",
+      "#856447",
+      "#9b7859",
       "#60452d"
     ],
     "mask_found": true,
-    "id": 38,
+    "id": 34,
     "filename": "t5.jpg"
   },
   {
@@ -829,11 +762,11 @@
     },
     "dominant_colors": [
       "#939dad",
-      "#c7cbd0",
-      "#4f525c"
+      "#c7cbcf",
+      "#52555e"
     ],
     "mask_found": true,
-    "id": 39,
+    "id": 35,
     "filename": "t14.jpg"
   },
   {
@@ -850,12 +783,12 @@
       "winter": 0.0012
     },
     "dominant_colors": [
-      "#3d3c41",
-      "#48464c",
-      "#2c2b2f"
+      "#3e3d42",
+      "#49474d",
+      "#2e2d31"
     ],
     "mask_found": true,
-    "id": 40,
+    "id": 36,
     "filename": "t12.jpg"
   },
   {
@@ -874,10 +807,10 @@
     "dominant_colors": [
       "#242127",
       "#39383d",
-      "#848082"
+      "#857f81"
     ],
     "mask_found": true,
-    "id": 41,
+    "id": 37,
     "filename": "t13.jpg"
   },
   {
@@ -894,12 +827,12 @@
       "winter": 0.0008
     },
     "dominant_colors": [
-      "#c7bfbf",
-      "#aaa2a1",
-      "#8d8b84"
+      "#c6bebf",
+      "#a9a2a0",
+      "#8f8c85"
     ],
     "mask_found": true,
-    "id": 42,
+    "id": 38,
     "filename": "t29.jpg"
   },
   {
@@ -918,10 +851,10 @@
     "dominant_colors": [
       "#343939",
       "#696c6c",
-      "#b5b6b3"
+      "#b2b3b0"
     ],
     "mask_found": true,
-    "id": 43,
+    "id": 39,
     "filename": "t30.jpg"
   },
   {
@@ -938,12 +871,12 @@
       "winter": 0.0035
     },
     "dominant_colors": [
-      "#aeabb4",
-      "#7b7881",
-      "#dedbe3"
+      "#aba8b1",
+      "#dbd9e0",
+      "#7a777f"
     ],
     "mask_found": true,
-    "id": 44,
+    "id": 40,
     "filename": "test004.jpg"
   },
   {
@@ -960,12 +893,12 @@
       "winter": 0.0017
     },
     "dominant_colors": [
-      "#b8bcc2",
-      "#8d9095",
-      "#606062"
+      "#b8bdc3",
+      "#909498",
+      "#636365"
     ],
     "mask_found": true,
-    "id": 45,
+    "id": 41,
     "filename": "test007.jpg"
   },
   {
@@ -983,34 +916,12 @@
     },
     "dominant_colors": [
       "#181d1e",
-      "#32383b",
-      "#d2d3cd"
+      "#34393c",
+      "#d0d1cb"
     ],
     "mask_found": true,
-    "id": 46,
+    "id": 42,
     "filename": "test011.jpg"
-  },
-  {
-    "category": "Dress",
-    "category_confidence": 0.8473,
-    "texture": "solid",
-    "texture_confidence": 0.6655,
-    "season": "summer",
-    "season_confidence": 0.6039,
-    "season_probs": {
-      "all-season": 0.3197,
-      "fall": 0.076,
-      "summer": 0.6039,
-      "winter": 0.0003
-    },
-    "dominant_colors": [
-      "#4d4d4d",
-      "#3b3b3b",
-      "#faf9f9"
-    ],
-    "mask_found": true,
-    "id": 47,
-    "filename": "test031.jpg"
   },
   {
     "category": "Dress",
@@ -1028,10 +939,10 @@
     "dominant_colors": [
       "#f4cad0",
       "#dfadb4",
-      "#f7eeef"
+      "#f7eff0"
     ],
     "mask_found": true,
-    "id": 48,
+    "id": 43,
     "filename": "test032.jpg"
   },
   {
@@ -1050,10 +961,10 @@
     "dominant_colors": [
       "#e2cedf",
       "#c6afb3",
-      "#967b68"
+      "#9c816d"
     ],
     "mask_found": true,
-    "id": 49,
+    "id": 44,
     "filename": "test043.jpg"
   },
   {
@@ -1070,12 +981,12 @@
       "winter": 0.9602
     },
     "dominant_colors": [
-      "#683d41",
-      "#2d1215",
-      "#977c85"
+      "#663b3f",
+      "#2c1114",
+      "#967a82"
     ],
     "mask_found": true,
-    "id": 50,
+    "id": 45,
     "filename": "test044.jpg"
   },
   {
@@ -1092,12 +1003,12 @@
       "winter": 0.0001
     },
     "dominant_colors": [
-      "#70716c",
-      "#43443f",
+      "#6f706c",
+      "#41423d",
       "#eeeeef"
     ],
     "mask_found": true,
-    "id": 51,
+    "id": 46,
     "filename": "test058.jpg"
   },
   {
@@ -1116,10 +1027,10 @@
     "dominant_colors": [
       "#171717",
       "#090909",
-      "#b1b1b1"
+      "#f5f5f5"
     ],
     "mask_found": true,
-    "id": 52,
+    "id": 47,
     "filename": "test054.jpg"
   },
   {
@@ -1136,12 +1047,12 @@
       "winter": 0.0059
     },
     "dominant_colors": [
-      "#0e0d10",
-      "#302e33",
-      "#c7c2c0"
+      "#0f0e11",
+      "#302f34",
+      "#c9c4c3"
     ],
     "mask_found": true,
-    "id": 53,
+    "id": 48,
     "filename": "t37.webp"
   },
   {
@@ -1159,11 +1070,11 @@
     },
     "dominant_colors": [
       "#8c5340",
-      "#b37b6a",
-      "#d9ab9d"
+      "#b47d6c",
+      "#daaea0"
     ],
     "mask_found": true,
-    "id": 54,
+    "id": 49,
     "filename": "p3.webp"
   },
   {
@@ -1181,11 +1092,11 @@
     },
     "dominant_colors": [
       "#cebaaa",
-      "#b59e8c",
-      "#f4f2f1"
+      "#b49d8b",
+      "#f4f2f2"
     ],
     "mask_found": true,
-    "id": 55,
+    "id": 50,
     "filename": "p2.webp"
   },
   {
@@ -1202,12 +1113,12 @@
       "winter": 0.0083
     },
     "dominant_colors": [
-      "#f5f5f5",
-      "#e1e1e1",
-      "#c2c1c1"
+      "#f6f6f6",
+      "#e2e2e2",
+      "#c2c2c2"
     ],
     "mask_found": true,
-    "id": 56,
+    "id": 51,
     "filename": "t38.jpg"
   },
   {
@@ -1224,12 +1135,12 @@
       "winter": 0.0021
     },
     "dominant_colors": [
-      "#4f3224",
+      "#4f3124",
       "#391f13",
-      "#937a72"
+      "#8a736b"
     ],
     "mask_found": true,
-    "id": 57,
+    "id": 52,
     "filename": "p1.jpg"
   },
   {
@@ -1246,12 +1157,12 @@
       "winter": 1.0
     },
     "dominant_colors": [
-      "#babd9b",
-      "#959980",
-      "#3e4035"
+      "#bbbd9b",
+      "#979a82",
+      "#414337"
     ],
     "mask_found": true,
-    "id": 58,
+    "id": 53,
     "filename": "t35.webp"
   },
   {
@@ -1268,12 +1179,12 @@
       "winter": 0.0024
     },
     "dominant_colors": [
-      "#87a1bc",
-      "#6e88a3",
-      "#47596d"
+      "#89a3be",
+      "#718ba6",
+      "#495a6e"
     ],
     "mask_found": true,
-    "id": 59,
+    "id": 54,
     "filename": "t42.jpg"
   },
   {
@@ -1291,11 +1202,11 @@
     },
     "dominant_colors": [
       "#4d3227",
-      "#361c12",
-      "#63483c"
+      "#361c11",
+      "#65493c"
     ],
     "mask_found": true,
-    "id": 60,
+    "id": 55,
     "filename": "t33.jpg"
   },
   {
@@ -1312,12 +1223,12 @@
       "winter": 0.0009
     },
     "dominant_colors": [
-      "#dcd4ca",
-      "#bdad9a",
-      "#89745b"
+      "#ddd4cb",
+      "#bdad9b",
+      "#8a745c"
     ],
     "mask_found": true,
-    "id": 61,
+    "id": 56,
     "filename": "t41.jpg"
   },
   {
@@ -1334,12 +1245,12 @@
       "winter": 0.0777
     },
     "dominant_colors": [
-      "#b6d8e6",
+      "#b5d8e6",
       "#8dafbd",
-      "#585f5e"
+      "#5d5e59"
     ],
     "mask_found": true,
-    "id": 62,
+    "id": 57,
     "filename": "t34.jpg"
   },
   {
@@ -1357,11 +1268,11 @@
     },
     "dominant_colors": [
       "#ebd8c7",
-      "#dac3b0",
-      "#b39781"
+      "#dac4b0",
+      "#b49881"
     ],
     "mask_found": true,
-    "id": 63,
+    "id": 58,
     "filename": "t36.webp"
   },
   {
@@ -1379,11 +1290,11 @@
     },
     "dominant_colors": [
       "#7f7e82",
-      "#a1a0a4",
+      "#a1a0a5",
       "#575659"
     ],
     "mask_found": true,
-    "id": 64,
+    "id": 59,
     "filename": "t32.jpg"
   },
   {
@@ -1400,12 +1311,12 @@
       "winter": 0.0559
     },
     "dominant_colors": [
-      "#5e6d81",
+      "#5f6d81",
       "#4c5b70",
-      "#29384b"
+      "#2a394c"
     ],
     "mask_found": true,
-    "id": 65,
+    "id": 60,
     "filename": "t18.jpg"
   },
   {
@@ -1423,11 +1334,99 @@
     },
     "dominant_colors": [
       "#deb2b9",
-      "#cf8e9c",
-      "#f1ccd0"
+      "#d18f9d",
+      "#f2cdd2"
     ],
     "mask_found": true,
-    "id": 66,
+    "id": 61,
     "filename": "t1.webp"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.9681,
+    "texture": "striped",
+    "texture_confidence": 0.6917,
+    "season": "winter",
+    "season_confidence": 0.9112,
+    "season_probs": {
+      "all-season": 0.0109,
+      "fall": 0.0013,
+      "summer": 0.0766,
+      "winter": 0.9112
+    },
+    "dominant_colors": [
+      "#f3ece2",
+      "#cfc4b4",
+      "#684e39"
+    ],
+    "mask_found": true,
+    "id": 62,
+    "filename": "t44.jpg"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.9917,
+    "texture": "solid",
+    "texture_confidence": 0.8719,
+    "season": "winter",
+    "season_confidence": 0.9164,
+    "season_probs": {
+      "all-season": 0.0206,
+      "fall": 0.0611,
+      "summer": 0.002,
+      "winter": 0.9164
+    },
+    "dominant_colors": [
+      "#56141d",
+      "#36090e",
+      "#e0d7d8"
+    ],
+    "mask_found": true,
+    "id": 63,
+    "filename": "t43.webp"
+  },
+  {
+    "category": "Warmwear",
+    "category_confidence": 0.5762,
+    "texture": "solid",
+    "texture_confidence": 0.6839,
+    "season": "winter",
+    "season_confidence": 0.5703,
+    "season_probs": {
+      "all-season": 0.1628,
+      "fall": 0.044,
+      "summer": 0.2228,
+      "winter": 0.5703
+    },
+    "dominant_colors": [
+      "#3c1d14",
+      "#dddddb",
+      "#6d4c42"
+    ],
+    "mask_found": true,
+    "id": 64,
+    "filename": "t4.webp"
+  },
+  {
+    "category": "Jacket",
+    "category_confidence": 0.9906,
+    "texture": "solid",
+    "texture_confidence": 0.8541,
+    "season": "winter",
+    "season_confidence": 0.9569,
+    "season_probs": {
+      "all-season": 0.012,
+      "fall": 0.0303,
+      "summer": 0.0009,
+      "winter": 0.9569
+    },
+    "dominant_colors": [
+      "#11110f",
+      "#382d25",
+      "#826f5e"
+    ],
+    "mask_found": true,
+    "id": 65,
+    "filename": "t50.webp"
   }
 ]
