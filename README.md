@@ -89,6 +89,6 @@ Free-tier hosting was investigated and hit real constraints:
 ```bash
 cd stylemind-backend
 python src/build_wardrobe.py
-python src/demo.py
-python src/visualize_recommendations.py
+python -m src.build_wardrobe
+python -m src.visualize_recommendations
 ```

@@ -29,6 +29,8 @@ YOLO_CHECKPOINT_PATH = PROJECT_ROOT / "models" / "deepfashion2_yolov8s-seg.pt"
 IMG_SIZE = 224
 YOLO_CONF_THRESHOLD = 0.25
 NUM_DOMINANT_COLORS = 3
+
+DISPLAY_SIZE = 800   # NEW: for saved thumbnails, not model input
  
 _model = None
 _yolo_model = None
@@ -116,6 +118,7 @@ def segment_and_remove_background(img_path):
     if result.masks is None or len(result.masks.data) == 0:
         return {
             "final": letterbox_resize(img),
+            "display": letterbox_resize(img, target_size=DISPLAY_SIZE),
             "mask_overlay": img,
             "foreground_pixels": np.array(img).reshape(-1, 3),
             "mask_found": False,
@@ -148,6 +151,7 @@ def segment_and_remove_background(img_path):
     if len(xs) == 0 or len(ys) == 0:
         return {
             "final": letterbox_resize(img),
+            "display": letterbox_resize(img, target_size=DISPLAY_SIZE),
             "mask_overlay": img,
             "foreground_pixels": img_arr.reshape(-1, 3),
             "mask_found": False,
@@ -159,6 +163,7 @@ def segment_and_remove_background(img_path):
  
     return {
         "final": letterbox_resize(cropped),
+        "display": letterbox_resize(cropped, target_size=DISPLAY_SIZE),
         "mask_overlay": mask_overlay,
         "foreground_pixels": img_arr[mask_bool],  # only garment pixels
         "mask_found": True,
