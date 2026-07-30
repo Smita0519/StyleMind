@@ -80,7 +80,7 @@ def get_dresses(filtered_wardrobe):
     return [i for i in filtered_wardrobe if i["category"] in FULL_BODY]
 
 
-def get_jackets(filtered_wardrobe):
+def get_outerwear(filtered_wardrobe):
     """Returns all Blazer/Jacket items from the filtered wardrobe — used as
     an optional add-on suggestion for any outfit."""
     return [i for i in filtered_wardrobe if i["category"] in OUTERWEAR]

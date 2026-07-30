@@ -1,66 +1,13 @@
-# # Virtual environments / interpreters — never commit these
-# venv/
-# .venv/
-# env/
-# ENV/
-# __pycache__/
-# *.pyc
-# *.pyo
-
-# # OS / editor cruft
-# .DS_Store
-# .vscode/
-# .idea/
-
-# # Local demo output images (regenerated each run, not part of the repo)
-# outputs/*
-# !outputs/.gitkeep
-
-# # Jupyter checkpoints (if notebooks are ever added back)
-# .ipynb_checkpoints/
-
-# # Environment / secrets
-# .env
-
-# # Dataset artifacts / intermediate pipeline outputs — never commit these,
-# # they belong on Drive/cloud storage, not in git
-# pipeline/data/
-# pipeline/*.csv
-# pipeline/*.keras
-# *.pt
-
-
-
 cat > .gitignore << 'EOF'
-# Virtual environments / interpreters — never commit these
 venv/
 .venv/
-env/
-ENV/
 __pycache__/
 *.pyc
 *.pyo
-
-# OS / editor cruft
-.DS_Store
-.vscode/
-.idea/
-
-# Environment / secrets
 .env
-
-# --- StyleMind (ML pipeline) ---
-StyleMind/outputs/*
-!StyleMind/outputs/.gitkeep
-StyleMind/.ipynb_checkpoints/
-StyleMind/pipeline/data/
-StyleMind/pipeline/*.csv
-StyleMind/pipeline/*.keras
-StyleMind/**/*.pt
-
-# --- stylemind-backend (Django) ---
-stylemind-backend/db.sqlite3
-stylemind-backend/media/*
-!stylemind-backend/media/.gitkeep
-stylemind-backend/.dist/
+media/
+db.sqlite3
+*.log
 EOF
+
+git add .gitignore

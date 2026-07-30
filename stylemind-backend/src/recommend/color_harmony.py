@@ -80,13 +80,11 @@ def score_color_pair(hex1, hex2, style="safe"):
 
 def score_item_pair(colors_a, colors_b, style="safe"):
     """
-    Scores two items' full dominant_colors lists against each other.
-    Uses the BEST-scoring pair of colors across both lists.
+    Scores two items using their PRIMARY dominant color only
+    (index 0 = most prevalent from K-Means), not best-of-all-combos.
+    This stops a minor background/edge-artifact neutral shade from
+    always winning over genuine hue matches.
     """
-    best = 0.0
-    for ca in colors_a:
-        for cb in colors_b:
-            s = score_color_pair(ca, cb, style=style)
-            if s > best:
-                best = s
-    return round(best, 4)
+    if not colors_a or not colors_b:
+        return NEUTRAL_FALLBACK_SCORES.get(style, 0.9)
+    return score_color_pair(colors_a[0], colors_b[0], style=style)
