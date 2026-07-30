@@ -86,7 +86,9 @@ Free-tier hosting was investigated and hit real constraints:
 - Texture/pattern compatibility scoring (deprioritized — texture head predicts pattern, not fabric)
 
 ## Commands
+```bash
 cd stylemind-backend
 python src/build_wardrobe.py
 python src/demo.py
 python src/visualize_recommendations.py
+```
