@@ -24,12 +24,12 @@ def build_wardrobe():
     wardrobe = []
     for i, path in enumerate(image_paths, start=1):
         print(f"[{i}/{len(image_paths)}] Predicting {path.name}...")
-        result, seg = predict(str(path), return_segmentation=True)   # CHANGED
+        result, seg = predict(str(path), return_segmentation=True) 
         result["id"] = i
         result["filename"] = path.name
         wardrobe.append(result)
 
-        seg["final"].save(PROCESSED_FOLDER / path.name)   # NEW: save bg-removed thumbnail
+        seg["display"].save(PROCESSED_FOLDER / path.name, quality=95)   # NEW: save bg-removed thumbnail
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(wardrobe, f, indent=2)
