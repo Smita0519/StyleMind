@@ -37,8 +37,8 @@ YOLO_CHECKPOINT_PATH = PROJECT_ROOT / "models" / "deepfashion2_yolov8s-seg.pt"
 IMG_SIZE = 224
 YOLO_CONF_THRESHOLD = 0.15
 NUM_DOMINANT_COLORS = 3
-MASK_CLOSE_KERNEL_SIZE = 13 
-
+MASK_CLOSE_KERNEL_SIZE = 9  
+DISPLAY_SIZE = 800
 
 _model = None
 _yolo_model = None
