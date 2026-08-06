@@ -1,16 +1,160 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# ===================== CHANGE START =====================
+# New model: stores the real name/email a user typed at signup.
+# Django's built-in User model only has username/password by default,
+# so this separate table holds the extra profile info the frontend needs
+# (e.g. to greet the user by their real name).
+class Profile(models.Model):
+    # One-to-one link: each Django User has exactly one Profile
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    display_name = models.CharField(max_length=150)  # the real name typed at signup
+    email = models.EmailField()
+    profile_picture = models.ImageField(upload_to="profile_pics/", null=True, blank=True)
+
+    def __str__(self):
+        return self.display_name
+# ===================== CHANGE END =====================
+
+
 class WardrobeItem(models.Model):
+    # Every wardrobe item belongs to exactly one user (the owner)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobe_items")
+
+    # The original photo the user uploaded, unmodified
     image = models.ImageField(upload_to="wardrobe/")
+
+    # ===================== CHANGE START =====================
+    # New field: the background-removed / letterboxed version of the photo
+    # that predict.py already generates for the classifier. null=True and
+    # blank=True mean older items (uploaded before this field existed)
+    # won't break — they just have processed_image = None.
+    processed_image = models.ImageField(upload_to="wardrobe/processed/", null=True, blank=True)
+    # ===================== CHANGE END =====================
+
+    # These fields all come directly from the ML classification pipeline
     category = models.CharField(max_length=30)
     category_confidence = models.FloatField()
     texture = models.CharField(max_length=30)
     texture_confidence = models.FloatField()
     season = models.CharField(max_length=20)
     season_confidence = models.FloatField()
-    season_probs = models.JSONField()
-    dominant_colors = models.JSONField()
-    mask_found = models.BooleanField()
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    season_probs = models.JSONField()      # e.g. {"summer": 0.8, "winter": 0.1, ...}
+    dominant_colors = models.JSONField()   # e.g. ["#FFFFFF", "#111827"]
+    mask_found = models.BooleanField()     # did YOLO successfully detect the garment?
+
+    # ===================== CHANGE START =====================
+    # New field: lets the user mark an item as a favorite from the frontend.
+    # default=False means every existing item starts as "not favorited".
+    favorite = models.BooleanField(default=False)
+    # ===================== CHANGE END =====================
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)  # auto-set when the row is created
+
+    def __str__(self):
+        return f"{self.category} ({self.owner.username})"
+
+
+# ===================== CHANGE START =====================
+# New model: represents one "saved outfit" — a combination of wardrobe
+# items the user chose to keep from a recommendation. Each slot
+# (top/bottom/jacket) points to a WardrobeItem, or can be empty/None
+# (e.g. a dress-only outfit has no separate "top").
+class Outfit(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="outfits")
+    occasion = models.CharField(max_length=30)  # e.g. "Formal", "Casual"
+
+    temp_c = models.FloatField(null=True, blank=True)  # temperature used at generation time (slider value, or resolved from weather)
+    # ===================== CHANGE START =====================
+    # CHANGED — 'city' renamed to 'location_name', plus 'region' and
+    # 'country' ADDED, so a saved outfit can show a full location
+    # breadcrumb (e.g. "Kathmandu, Bagmati, Nepal") instead of just one
+    # city string. All blank when GPS wasn't used (slider fallback).
+    location_name = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    # ===================== CHANGE END =====================
+    style_preference = models.CharField(max_length=20, blank=True)  # "safe" or "bold"
+
+    # on_delete=SET_NULL: if the underlying wardrobe item gets deleted later,
+    # the outfit itself isn't deleted too — it just loses that one reference
+    top = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    bottom = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    jacket = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Outfit for {self.occasion} ({self.owner.username})"
+# ===================== CHANGE END =====================
+
+# ===================== CHANGE START =====================
+# New model: stores every chat message (both user and AI) so
+# conversations persist across sessions instead of resetting every
+# time the page reloads. Replaces the temporary chat-proxy entirely —
+# Gemini is now called directly from Django, with real wardrobe/weather
+# data pulled straight from the database instead of trusted from the
+# frontend.
+class ChatMessage(models.Model):
+    ROLE_CHOICES = [("user", "User"), ("assistant", "Assistant")]
+
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_messages")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    text = models.TextField()  # the raw message — user's typed text, or Gemini's raw reply text
+    # For assistant messages only: the reply broken into segments so the
+    # frontend can render item photos inline. Stored as JSON like:
+    # [{"type": "text", "text": "..."}, {"type": "item", "item_id": 42}, ...]
+    segments = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]  # oldest first, so history reads top-to-bottom naturally
+
+    def __str__(self):
+        return f"{self.role}: {self.text[:40]}"
+# ===================== CHANGE END =====================
+
+# ===================== CHANGE START =====================
+# New model: represents ONE distinct conversation thread. Previously all
+# of a user's messages were stored flat with no grouping — this gives
+# each "New Chat" click its own separate history, shown as its own
+# entry in the sidebar.
+class ChatSession(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_sessions")
+    # Auto-filled from the first user message once one exists — starts
+    # blank right when a new session is created via "New Chat"
+    title = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # bumped every time a message is added
+
+    class Meta:
+        ordering = ["-updated_at"]  # most recently active conversation first, for the sidebar
+
+    def __str__(self):
+        return self.title or f"Chat {self.id}"
+# ===================== CHANGE END =====================
+
+
+class ChatMessage(models.Model):
+    ROLE_CHOICES = [("user", "User"), ("assistant", "Assistant")]
+
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_messages")
+
+    # ===================== CHANGE START =====================
+    # New — every message now belongs to a specific session. null=True
+    # only so older messages (saved before this field existed) don't
+    # break the migration; every message going forward will always have one.
+    session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="messages", null=True, blank=True)
+    # ===================== CHANGE END =====================
+
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    text = models.TextField()
+    segments = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.role}: {self.text[:40]}"
