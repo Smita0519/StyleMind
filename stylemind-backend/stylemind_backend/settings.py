@@ -102,7 +102,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'stylemind_db',
         'USER': 'postgres',
-        'PASSWORD': 'Dashirunrun20',
+        'PASSWORD': 'nepal@123',
         'HOST': 'localhost',
         'PORT': '5432',
     }
