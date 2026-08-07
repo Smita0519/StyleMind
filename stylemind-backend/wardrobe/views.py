@@ -14,6 +14,7 @@ from src.recommend.recommend import get_recommendations  # the outfit-matching a
 
 from .chatbot import get_stylist_reply
 
+from .weather import resolve_temperature, get_rain_nudge
 
 # ────────────────────────────────────────────────
 # AUTH
@@ -183,8 +184,18 @@ def recommend(request):
     wardrobe = [WardrobeItemSerializer(i).data for i in items]
     results = get_recommendations(wardrobe, temp_c=temp_c, intent=intent, top_k=top_k, style_preference=style_preference)
 
-    return Response({"weather": weather_info, "recommendations": results})
+    rain_nudge = get_rain_nudge(weather_info)
 
+    return Response({
+        "weather": weather_info,
+        "recommendations": results,
+        # NEW — `results` already contains the full ranked pool (up to
+        # browse_pool_size, default 15), not just top_k. initial_count tells
+        # the frontend how many to show upfront; the rest is already here
+        # for "browse more" with zero extra requests or re-scoring.
+        "initial_count": top_k,
+        "rain_nudge": rain_nudge,
+    })
 
 # ===================== CHANGE START =====================
 # New endpoint: GET/POST /api/outfits/ — list saved outfits, or save a new one

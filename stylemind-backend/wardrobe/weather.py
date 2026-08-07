@@ -192,6 +192,7 @@ def get_weather_by_coords(lat, lon):
         "feels_like_c": current.get("feelslike_c"),
         "description": current.get("condition", {}).get("text"),
         "humidity": current.get("humidity"),
+        "precip_mm": current.get("precip_mm"),   # NEW — needed for the rain-aware nudge
     }
 
     # ===================== CHANGE START =====================
@@ -213,3 +214,41 @@ def resolve_temperature(lat=None, lon=None, manual_temp=None):
     if manual_temp is not None:
         return float(manual_temp), None
     raise ValueError("Could not determine temperature — allow location access or set a manual temperature.")
+
+# ===================== CHANGE START =====================
+# NEW — rain-aware nudge. Purely informational (icon + short text), not a
+# filtering signal — the actual outfit filtering in filtering.py stays
+# temperature-only, per the earlier decision to keep rain out of item
+# selection for now. This just tells the user "bring an umbrella" on top
+# of whatever outfit gets recommended.
+RAIN_KEYWORDS = ["rain", "drizzle", "shower", "thunderstorm"]
+
+
+def get_rain_nudge(weather_info):
+    """
+    Returns {"icon": "umbrella", "message": ...} if the current weather
+    looks rainy, or None if it doesn't / weather_info is unavailable
+    (e.g. user set a manual temp with no live weather lookup).
+
+    Combines two signals since either alone can miss real rain:
+      - precip_mm > 0: actual measured precipitation this reading
+      - condition description containing a rain-related keyword: catches
+        "light rain" / "patchy rain possible" even when precip_mm hasn't
+        registered anything yet
+    """
+    if not weather_info:
+        return None
+
+    precip_mm = weather_info.get("precip_mm") or 0
+    description = (weather_info.get("description") or "").lower()
+
+    is_rainy = precip_mm > 0 or any(keyword in description for keyword in RAIN_KEYWORDS)
+
+    if not is_rainy:
+        return None
+
+    return {
+        "icon": "umbrella",
+        "message": "Looks like rain — consider grabbing an umbrella or raincoat.",
+    }
+# ===================== CHANGE END =====================
