@@ -11,6 +11,7 @@ urlpatterns = [
     path("wardrobe/<int:item_id>/favorite/", views.toggle_favorite, name="toggle_favorite"),
     path("outfits/", views.outfits, name="outfits"),
     path("outfits/<int:outfit_id>/", views.delete_outfit, name="delete_outfit"),
+    path("health/", views.health, name="health"),  # NEW — lets the frontend detect a backend restart
     # ===================== CHANGE START =====================
     # FIXED — this route was completely missing, even though the view
     # function for it (chat_sessions) already existed in views.py

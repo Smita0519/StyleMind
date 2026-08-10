@@ -160,23 +160,15 @@
 # wardrobe/weather.py
 import os
 import requests
-from django.core.cache import cache  # ===================== CHANGE START =====================
 
 WEATHERAPI_KEY = os.environ.get("WEATHERAPI_KEY")
 
+
 def get_weather_by_coords(lat, lon):
     # ===================== CHANGE START =====================
-    # NEW — cache results for 15 minutes, keyed by rounded coordinates.
-    # Rounding to 2 decimal places (~1.1km precision) means nearby repeat
-    # requests (e.g. clicking "Generate New" a few times in a row) hit the
-    # cache instead of calling the paid/rate-limited API again — faster
-    # responses, fewer calls, and comfortably within the free tier's quota.
-    cache_key = f"weather:{round(float(lat), 2)}:{round(float(lon), 2)}"
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return cached
-    # ===================== CHANGE END =====================
-
+    # CHANGED — removed the 15-minute Django cache that used to sit here.
+    # Every call now hits WeatherAPI.com directly, every time — no cached/
+    # stale readings, per your preference.
     url = "https://api.weatherapi.com/v1/current.json"
     params = {"key": WEATHERAPI_KEY, "q": f"{lat},{lon}", "aqi": "no"}
     response = requests.get(url, params=params, timeout=5)
@@ -184,7 +176,7 @@ def get_weather_by_coords(lat, lon):
     data = response.json()
     location = data.get("location", {})
     current = data.get("current", {})
-    result = {
+    return {
         "location_name": location.get("name"),
         "region": location.get("region"),
         "country": location.get("country"),
@@ -192,16 +184,9 @@ def get_weather_by_coords(lat, lon):
         "feels_like_c": current.get("feelslike_c"),
         "description": current.get("condition", {}).get("text"),
         "humidity": current.get("humidity"),
-        "precip_mm": current.get("precip_mm"),   # NEW — needed for the rain-aware nudge
+        "precip_mm": current.get("precip_mm"),  # needed for the rain-aware nudge below
     }
-
-    # ===================== CHANGE START =====================
-    # NEW — store this result for 15 minutes (900 seconds) before it's
-    # considered stale and a fresh API call is made again
-    cache.set(cache_key, result, timeout=900)
     # ===================== CHANGE END =====================
-
-    return result
 
 
 def resolve_temperature(lat=None, lon=None, manual_temp=None):
@@ -215,11 +200,10 @@ def resolve_temperature(lat=None, lon=None, manual_temp=None):
         return float(manual_temp), None
     raise ValueError("Could not determine temperature — allow location access or set a manual temperature.")
 
-# ===================== CHANGE START =====================
-# NEW — rain-aware nudge. Purely informational (icon + short text), not a
+
+# Rain-aware nudge. Purely informational (icon + short text), not a
 # filtering signal — the actual outfit filtering in filtering.py stays
-# temperature-only, per the earlier decision to keep rain out of item
-# selection for now. This just tells the user "bring an umbrella" on top
+# temperature-only. This just tells the user "bring an umbrella" on top
 # of whatever outfit gets recommended.
 RAIN_KEYWORDS = ["rain", "drizzle", "shower", "thunderstorm"]
 
@@ -251,4 +235,3 @@ def get_rain_nudge(weather_info):
         "icon": "umbrella",
         "message": "Looks like rain — consider grabbing an umbrella or raincoat.",
     }
-# ===================== CHANGE END =====================
