@@ -111,7 +111,7 @@ def _process_item_async(item_id):
         item.mask_found = result["mask_found"]
 
         buffer = BytesIO()
-        seg["final"].save(buffer, format="PNG")
+        seg["display"].save(buffer, format="PNG")
         filename = item.image.name.split("/")[-1]
         item.processed_image.save(f"processed_{filename}.png", ContentFile(buffer.getvalue()), save=False)
 
