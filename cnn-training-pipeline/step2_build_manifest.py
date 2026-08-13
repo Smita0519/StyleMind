@@ -1,5 +1,5 @@
 """
-Step 2 — Build the dataset manifest.
+Step 2 - Build the dataset manifest.
 
 Scans JPG_DATA_DIR/<category>/ and records every valid image as
 (filepath, category) into manifest.csv. Corrupt/unreadable files are

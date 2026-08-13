@@ -1,5 +1,5 @@
 """
-Step 6 — Stratified train/val/test split (70/15/15), stratified by category
+Step 6 - Stratified train/val/test split (70/15/15), stratified by category
 so class proportions stay consistent across all three splits. Fixed random
 seed for reproducibility.
 """

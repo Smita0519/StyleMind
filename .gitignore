@@ -11,3 +11,7 @@ db.sqlite3
 EOF
 
 git add .gitignore
+models/*.keras
+models/*.pt
+__pycache__/
+venv/

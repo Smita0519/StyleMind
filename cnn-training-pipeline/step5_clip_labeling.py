@@ -1,8 +1,8 @@
 """
-Step 5 — CLIP zero-shot labeling for texture and season.
+Step 5 - CLIP zero-shot labeling for texture and season.
 
 Runs on the YOLO-seg processed (clean, cropped) images from Step 4, not
-raw photos — background clutter would otherwise bias the predictions.
+raw photos - background clutter would otherwise bias the predictions.
 
 This is the FINAL, calibrated version of the labeling logic after two
 rounds of iteration (see notes below and experiments/ for the discarded
@@ -13,12 +13,12 @@ intermediate attempts):
      (Warmwear/Jacket -> winter, Shorts -> summer), skipping CLIP entirely.
   3. For everything else, season is CLIP top-1 UNLESS the confidence gap
      between the top-1 and top-2 scores is below SEASON_CONFIDENCE_MARGIN,
-     in which case it falls back to 'all-season' (a fallback outcome only —
+     in which case it falls back to 'all-season' (a fallback outcome only -
      not itself a CLIP prompt class, see config.py for why).
 
 Calibration history:
   - Margin started at 0.03, which caused 89% of images to hit the
-    fallback — the score spread's actual std was only ~0.02, so 0.03 was
+    fallback - the score spread's actual std was only ~0.02, so 0.03 was
     larger than a full standard deviation.
   - Lowered to 0.008, landing at a healthy 23% fallback rate.
   - A 'fall' prompt investigation showed CLIP was structurally biased

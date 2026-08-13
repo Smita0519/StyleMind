@@ -57,7 +57,7 @@ def show_result(image_path, result, seg):
     mask_title = "YOLO segmentation" if seg["mask_found"] else "YOLO: no mask (fallback)"
     ax_mask.set_title(mask_title, fontsize=11)
  
-    ax_input.imshow(seg["final"])
+    ax_input.imshow(seg["display"])
     ax_input.axis("off")
     ax_input.set_title("Model input (224x224)", fontsize=11)
  

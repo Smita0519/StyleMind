@@ -1,11 +1,11 @@
 """
-Step 8 — Build the 3-head MobileNetV2 model.
+Step 8 - Build the 3-head MobileNetV2 model.
 
 Backbone: MobileNetV2, ImageNet-pretrained, frozen for phase 1 transfer
 learning. Chosen over a larger backbone for fast Colab training, mobile/
 edge-deployment friendliness, and because garment classification doesn't
 need extra model capacity. With only a few hundred images per category,
-training from scratch would overfit badly — ImageNet pretraining supplies
+training from scratch would overfit badly - ImageNet pretraining supplies
 general visual features (edges, shapes, textures) that transfer well to
 clothing.
 

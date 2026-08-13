@@ -1,10 +1,10 @@
 """
-Step 4 — YOLO-seg preprocessing: background removal, crop, letterbox resize.
+Step 4 - YOLO-seg preprocessing: background removal, crop, letterbox resize.
 
 Per image: run YOLO-seg -> take the largest detected mask -> replace
 background with white -> crop to the garment's bounding box -> letterbox
 resize to 224x224 (single JPEG save, LANCZOS resampling, per the
-single-encode rule — never resize/save/reopen/resize/save again).
+single-encode rule - never resize/save/reopen/resize/save again).
 
 Falls back to the original (flattened) image if mask detection fails,
 and logs every fallback rather than crashing.
