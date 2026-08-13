@@ -1,5 +1,5 @@
 """
-StyleMind pipeline — shared configuration.
+StyleMind pipeline - shared configuration.
 
 This whole pipeline (steps 1-10) was developed and run in Google Colab
 with Google Drive mounted, since dataset prep needs a GPU (YOLO-seg, CLIP)
@@ -7,7 +7,7 @@ and the dataset itself lives on Drive. These scripts mirror the notebook
 cell-for-cell but are split into one file per step for readability.
 
 They are included here for review/reproducibility, not meant to be run
-as a local one-shot pipeline — run each step's contents as a Colab cell
+as a local one-shot pipeline - run each step's contents as a Colab cell
 (or adapt DRIVE_BASE below if running against a locally mounted/synced
 copy of the same folder structure).
 """
@@ -47,7 +47,7 @@ CLIP_MODEL_NAME = "ViT-B-32"
 CLIP_PRETRAINED = "laion2b_s34b_b79k"
 
 TEXTURE_CLASSES = ["solid", "striped", "floral", "graphic", "embroidered", "pleated", "checkered"]
-# 'all-season' is intentionally NOT a CLIP prompt class — it's a fallback
+# 'all-season' is intentionally NOT a CLIP prompt class - it's a fallback
 # outcome only, produced when the CLIP top-1/top-2 confidence gap is too
 # small to trust a specific season (see label_image() in step5).
 SEASON_CLASSES = ["summer", "winter", "fall"]
@@ -75,7 +75,7 @@ SEASON_RULES = {
 }
 
 # Recalibrated from an initial 0.03 after data showed the actual score
-# spread has std ~0.02 — 0.03 was larger than a full standard deviation,
+# spread has std ~0.02 - 0.03 was larger than a full standard deviation,
 # causing 89% of images to hit the fallback. 0.008 was tuned to land in a
 # healthy ~20-40% fallback range. See experiments notes in step5 docstring.
 SEASON_CONFIDENCE_MARGIN = 0.008

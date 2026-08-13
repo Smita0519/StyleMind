@@ -1,8 +1,8 @@
 """
-Step 10 — Final evaluation on the held-out test set.
+Step 10 - Final evaluation on the held-out test set.
 
-The test set has been fully untouched since Step 6 — no training or
-tuning decision has seen it — so this is the first genuinely unbiased
+The test set has been fully untouched since Step 6 - no training or
+tuning decision has seen it - so this is the first genuinely unbiased
 read on real-world performance. This is a single, one-time evaluation;
 no hyperparameters should be adjusted based on these results, since that
 would leak test-set information back into "training" indirectly.
@@ -13,13 +13,13 @@ Reports produced:
   - Confusion matrices (saved as PNGs) for category, texture, season
 
 Final locked test-set results (phase 1 model):
-  Category — 87.7% accuracy, macro F1 0.878
-  Texture  — 78.1% accuracy, macro F1 0.585
-  Season   — 75.1% accuracy, macro F1 0.687
+  Category - 87.7% accuracy, macro F1 0.878
+  Texture  - 78.1% accuracy, macro F1 0.585
+  Season   - 75.1% accuracy, macro F1 0.687
 
 Texture and season have a lower ceiling than category because their
 labels came from CLIP zero-shot labeling (Step 5), which is noisier than
-the human-derived category labels — not a flaw in this evaluation or the
+the human-derived category labels - not a flaw in this evaluation or the
 model architecture. Season's 'all-season' class in particular reflects
 genuine semantic overlap with 'fall'/'summer', confirmed by the confusion
 matrix, not a labeling bug.
@@ -58,17 +58,17 @@ def evaluate_model(model, test_ds, test_df, category_to_idx, texture_to_idx, sea
     season_true_idx = test_df["season"].map(season_to_idx).values
 
     print("\n" + "=" * 60)
-    print("CATEGORY — per-class report")
+    print("CATEGORY - per-class report")
     print("=" * 60)
     print(classification_report(category_true_idx, category_pred_idx, target_names=category_classes, digits=3))
 
     print("=" * 60)
-    print("TEXTURE — per-class report")
+    print("TEXTURE - per-class report")
     print("=" * 60)
     print(classification_report(texture_true_idx, texture_pred_idx, target_names=texture_classes, digits=3))
 
     print("=" * 60)
-    print("SEASON — per-class report")
+    print("SEASON - per-class report")
     print("=" * 60)
     print(classification_report(season_true_idx, season_pred_idx, target_names=season_classes, digits=3))
 

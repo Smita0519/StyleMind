@@ -1,5 +1,5 @@
 """
-Step 3 — Download the YOLO-seg checkpoint and verify its class list.
+Step 3 - Download the YOLO-seg checkpoint and verify its class list.
 
 Generic COCO-pretrained YOLO doesn't work here (no garment classes, only
 "person"), so this uses a checkpoint trained specifically on DeepFashion2,
@@ -26,7 +26,7 @@ def download_checkpoint():
 def verify_class_list():
     """
     Loads the checkpoint and runs it on one sample image from the manifest,
-    printing the class list — a manual checkpoint to confirm the model's
+    printing the class list - a manual checkpoint to confirm the model's
     classes map sensibly before running the full dataset through it.
     """
     from ultralytics import YOLO

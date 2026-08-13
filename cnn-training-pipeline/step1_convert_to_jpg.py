@@ -1,5 +1,5 @@
 """
-Step 1 — Convert every raw image to JPG.
+Step 1 - Convert every raw image to JPG.
 
 Walks RAW_DATA_DIR/<category>/, flattens any transparency onto white
 (avoiding alpha-channel bugs downstream), and saves into

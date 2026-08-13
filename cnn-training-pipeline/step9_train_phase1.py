@@ -1,15 +1,15 @@
 """
-Step 9 — Train phase 1: frozen MobileNetV2 backbone, all three heads
+Step 9 - Train phase 1: frozen MobileNetV2 backbone, all three heads
 trained jointly.
 
 Early stopping on val_loss (patience 5) with best-weights restoration,
-plus a ModelCheckpoint that only saves the best-so-far model — both are
+plus a ModelCheckpoint that only saves the best-so-far model - both are
 Colab-disconnect resilience measures as well as standard anti-overfitting
 practice.
 
 This phase 1 checkpoint (best_model_phase1.keras) is the model that was
-ultimately locked in as final — see experiments/ for why fine-tuning
-(phase 2) and class-weighted retraining were tried and NOT adopted.
+ultimately locked in as final - see experiments/ for why fine-tuning
+(phase 2) and class-weighted loss were tried and NOT adopted.
 """
 
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint

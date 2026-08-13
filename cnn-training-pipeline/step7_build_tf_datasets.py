@@ -1,5 +1,5 @@
 """
-Step 7 — Encode labels for all three heads, save label maps, and build
+Step 7 - Encode labels for all three heads, save label maps, and build
 the tf.data.Dataset pipelines (with augmentation on the training set only).
 """
 
@@ -19,7 +19,7 @@ AUTOTUNE = tf.data.AUTOTUNE
 def build_label_maps(labeled_df):
     """
     Fits label encodings on the FULL labeled set so class indices stay
-    consistent across train/val/test — never fit separately per split.
+    consistent across train/val/test - never fit separately per split.
     """
     category_classes = sorted(labeled_df["category"].unique())
     texture_classes = sorted(labeled_df["texture"].unique())
@@ -49,7 +49,7 @@ def load_and_preprocess(filepath, category_idx, texture_idx, season_idx):
     return img, {"category": category_idx, "texture": texture_idx, "season": season_idx}
 
 
-# Augmentation layer — applied to the training set only
+# Augmentation layer - applied to the training set only
 data_augmentation = tf.keras.Sequential([
     tf.keras.layers.RandomFlip("horizontal"),
     tf.keras.layers.RandomRotation(0.08),

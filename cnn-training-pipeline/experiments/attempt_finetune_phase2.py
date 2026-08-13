@@ -1,5 +1,5 @@
 """
-EXPERIMENT — NOT part of the final pipeline. Kept for transparency.
+EXPERIMENT - NOT part of the final pipeline. Kept for transparency.
 
 Attempt: unfreeze the top of the MobileNetV2 backbone and fine-tune at a
 low learning rate, to see if it could beat phase 1 (frozen backbone).
@@ -14,7 +14,7 @@ epoch 1's weights. Comparing phase 2's best epoch to phase 1's best:
   Combined val_loss   1.682     1.727
 
 Essentially a wash on accuracy but worse on combined val_loss, and every
-epoch after that got progressively worse — a sign of fast overfitting
+epoch after that got progressively worse - a sign of fast overfitting
 once the top layers were unfrozen, not genuine improvement. Likely
 causes: FINE_TUNE_AT=100 unfroze too many params relative to the small
 dataset (~2,800 training images), and/or the dataset was already close
@@ -40,12 +40,12 @@ def attempt_finetune(model, base_model, train_ds, val_ds):
     model.load_weights(CHECKPOINT_PATH_PHASE1)
 
     # Unfreeze the base model, but keep early generic feature extractors
-    # (edges, textures, colors) frozen — only let high-level layers adapt
+    # (edges, textures, colors) frozen - only let high-level layers adapt
     base_model.trainable = True
     for layer in base_model.layers[:FINE_TUNE_AT]:
         layer.trainable = False
 
-    # Much lower learning rate — critical, otherwise fine-tuning destroys
+    # Much lower learning rate - critical, otherwise fine-tuning destroys
     # the pretrained weights instead of gently adapting them
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=FINE_TUNE_LR),

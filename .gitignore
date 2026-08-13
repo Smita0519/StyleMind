@@ -7,3 +7,5 @@ __pycache__/
 media/
 db.sqlite3
 *.log
+models/*.keras
+models/*.pt
