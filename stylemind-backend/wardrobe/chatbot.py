@@ -23,14 +23,19 @@ When giving fashion advice, ground your reasoning in the structured wardrobe dat
 
 Use color theory when reasoning about which colors pair well. Consider season and weather. Factor in the user's preference history to personalize suggestions.
 
+Whenever you state a temperature in your reply, always write it as "X°C" (the degree symbol, immediately followed by C, no space) — never spell it out as "X degrees" or "X degrees Celsius", even if the user phrased their own message that way.
+
 When you mention a SPECIFIC item from the wardrobe list by name, write it inline as [[item:ID]] using that item's real id from the list — for example "your [[item:14]] would pair nicely with..." This is the ONLY way to reference an item — never write the id any other way, such as "(ID 14)", "(id: 14)", "item #14", or "item 14" in plain text. Those forms will NOT show the user a photo, only the [[item:ID]] marker does. Do not invent ids that aren't in the wardrobe list provided.If a "Suggested outfit match" is given in the context, it is the SINGLE TOP PICK from StyleMind's real recommendation engine (KNN pairing + color-harmony scoring) — the exact same #1 result the Recommendations page itself would show for these conditions. This is the ONLY outfit you may present in your reply:
 - Reference exactly those items via their ids, and explain why this particular combination works (colors, weather, occasion).
 - Present it as your one recommendation, not as "an option" or "one idea" — never frame it as though there are other choices to browse, and never list a second combination alongside it, even if other wardrobe items would also seem to fit.
 - If the user asks for another option, a different look, or something bolder/safer, explain that you're showing their current top pick and they can generate more choices on the Recommendations page — don't invent a second combination yourself.
 - If "Suggested outfit match" starts with "NONE FOUND", no valid combination exists in the wardrobe at all for this occasion/weather — say so honestly, in your own words.
-- If it starts with "EXHAUSTED", the engine's entire ranked list for this occasion/weather has already been shown earlier in this conversation. As an absolute last resort, you may suggest individual wardrobe items yourself — but you MUST explicitly tell the user these are no longer the engine's ranked recommendation, just your own pick from what's left, so they're never misled into thinking it's still an algorithm-backed suggestion.Keep responses conversational and concise — this is a chat panel, not an essay."""
+- If it starts with "EXHAUSTED", the engine's entire ranked list for this occasion/weather has already been shown earlier in this conversation. As an absolute last resort, you may suggest individual wardrobe items yourself — but you MUST explicitly tell the user these are no longer the engine's ranked recommendation, just your own pick from what's left, so they're never misled into thinking it's still an algorithm-backed suggestion.
+- If any piece in "Suggested outfit match" (top, bottom, or jacket) has "off_season": True, or the outfit's own "off_season" field is True, mention this naturally and briefly — e.g. "heads up, this doesn't perfectly match the current season, but it's the best match your wardrobe has right now." Don't hide this, and don't make it sound alarming — just an honest, casual heads-up, the same way the Recommendations page shows an off-season badge.
 
-# CHANGED — expanded Formal keywords to catch more real phrasing
+Keep responses conversational and concise — this is a chat panel, not an essay."""
+
+# Expanded Formal keywords to catch more real phrasing
 INTENT_KEYWORDS = {
     "Formal": ["formal", "wedding", "interview", "office", "meeting", "gala", "presentation", "conference", "client", "boardroom", "work"],
     "Casual": ["casual", "weekend", "hangout", "everyday", "chill"],
@@ -41,11 +46,11 @@ SEASON_TEMP_MAP = {
     "winter": 5, "cold": 5, "fall": 18, "autumn": 18,
     "spring": 20, "summer": 32, "hot": 32, "warm": 28,
 }
-# NEW — lets a user ask the chatbot for a bolder pick, same as the
+# Lets a user ask the chatbot for a bolder pick, same as the
 # Recommendations page's Safe/Bold toggle, instead of always hardcoding "safe"
 STYLE_KEYWORDS = {"bold": "bold", "daring": "bold", "adventurous": "bold", "safe": "safe", "simple": "safe", "classic": "safe"}
 
-# NEW — detects "I don't like this, show me another" style follow-ups,
+# Detects "I don't like this, show me another" style follow-ups,
 # so we can advance through the SAME ranked list the recommendation
 # engine already computed, rather than letting Gemini invent something new
 REJECT_KEYWORDS = [
@@ -88,11 +93,25 @@ def detect_temp_c(message):
 
 
 def detect_style_preference(message):
+    """Returns the explicitly detected style, or None if nothing in the
+    message indicates one."""
     lower = message.lower()
     for kw, style in STYLE_KEYWORDS.items():
         if kw in lower:
             return style
-    return "safe"  # sensible default when nothing is mentioned
+    return None
+
+
+# ===================== CHANGE START =====================
+# NEW — "something bold"/"make it safer" with no occasion or rejection
+# phrase in it. Without this, a message like this fell through both the
+# detected_intent and is_rejection checks below, never triggering the
+# real recommendation engine at all — letting Gemini freelance a full
+# outfit combination on its own, ungrounded, which looked plausible but
+# wasn't actually the engine's pick.
+def is_style_only_followup(message, detected_intent, rejecting):
+    return bool(detect_style_preference(message)) and not detected_intent and not rejecting
+# ===================== CHANGE END =====================
 
 
 def parse_segments(reply_text):
@@ -110,18 +129,12 @@ def parse_segments(reply_text):
 
 
 def get_stylist_reply(user, message, session=None, lat=None, lon=None):
-   # ===================== CHANGE START =====================
-    # CHANGED — was a hand-built minimal dict (id/category/texture/season/
+    # Was a hand-built minimal dict (id/category/texture/season/
     # dominant_colors only), missing fields like season_confidence that
-    # filtering.py actually reads. That gap made the chatbot's filtering
-    # behave stricter than the real engine on the Recommendations page,
-    # even for the exact same temperature/intent — sometimes finding
-    # ZERO matches when the web version correctly found several. Now
-    # reuses the SAME serializer views.py's recommend() uses, so both
-    # paths get identical input, guaranteed.
+    # filtering.py actually reads. Now reuses the SAME serializer
+    # views.py's recommend() uses, so both paths get identical input.
     wardrobe_items = list(WardrobeItem.objects.filter(owner=user).order_by("id"))
     wardrobe_context = [WardrobeItemSerializer(item).data for item in wardrobe_items]
-    # ===================== CHANGE END =====================
 
     preference_history = [
         {"occasion": o.occasion, "liked": True}
@@ -130,10 +143,10 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
 
     try:
         temp_c, weather_info = resolve_temperature(lat=lat, lon=lon, manual_temp=None)
-        # CHANGED — round() only for the DISPLAYED text (e.g. "20°C"
-        # instead of "20.3°C"). temp_c itself stays the precise float,
-        # since that's what get_recommendations() below uses for actual
-        # weather-bucket scoring — only the human-facing string is rounded.
+        # round() only for the DISPLAYED text (e.g. "20°C" instead of
+        # "20.3°C"). temp_c itself stays the precise float, since that's
+        # what get_recommendations() below uses for actual weather-bucket
+        # scoring — only the human-facing string is rounded.
         display_temp = round(temp_c)
         weather_desc = f"{display_temp}°C, {weather_info['description']} in {weather_info['location_name']}" if weather_info else f"{display_temp}°C"
     except ValueError:
@@ -145,17 +158,23 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
             temp_c = None
             weather_desc = None
 
-    # ===================== CHANGE START =====================
-    # CHANGED — figures out WHICH position in the ranked list to show:
+    # Figures out WHICH position in the ranked list to show:
     # - A freshly named occasion always starts back at #1 (index 0)
     # - A rejection ("something else") with no new occasion mentioned
     #   advances to the NEXT position in the SAME ranked list from last time
+    # - A style-only follow-up ("something bold") restarts at #1 under
+    #   the new style, using the SAME occasion/weather as before
     # - Anything else (general chat) doesn't touch the recommendation
     #   engine at all
-    # ===================== CHANGE START =====================
     detected_intent = detect_intent(message)
-    style_preference = detect_style_preference(message)
     rejecting = is_rejection(message)
+
+    # Style preference now persists across a conversation the same way
+    # intent/temperature already do. A rejection or style-only follow-up
+    # with no style word of its own falls back to whatever the session
+    # already remembers, instead of silently defaulting to "safe".
+    detected_style = detect_style_preference(message)
+    style_preference = detected_style or (session.last_style_preference if session else None) or "safe"
 
     intent = None
     temp_for_lookup = temp_c  # temp_c = whatever was resolved fresh this message (GPS/typed/detected), possibly None
@@ -176,25 +195,34 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
     elif rejecting and session and session.last_intent:
         intent = session.last_intent
         outfit_index = (session.last_outfit_index or 0) + 1
-        # FIX — the actual bug: a follow-up like "something else" has no
-        # temperature of its own. Previously temp_c stayed None here,
-        # which skipped the recommendation lookup entirely. Now it falls
-        # back to whatever temperature the session already established.
+        # A follow-up like "something else" has no temperature of its
+        # own — fall back to whatever temperature the session already established.
         if temp_for_lookup is None:
             temp_for_lookup = session.last_temp_c
-
-    recommended_outfit = "not applicable — no occasion/temperature context for this message"
-    used_default_temp = False
     # ===================== CHANGE START =====================
-    # NEW — occasion is known but temperature genuinely couldn't be
-    # resolved (no location on, nothing typed/detected). Rather than
-    # silently skipping grounding, fall back to a mild default so the
-    # engine still runs — but flag it so Gemini is told to be upfront
-    # about the assumption instead of pretending it's the real weather.
+    # NEW — a style-only follow-up ("something bold") continues the SAME
+    # occasion/weather from the session, but restarts at the #1 pick
+    # (index 0) rather than advancing — a style change reorders the
+    # ranking entirely, so "the next item in the old ranking" wouldn't
+    # mean anything meaningful under the new style.
+    elif is_style_only_followup(message, detected_intent, rejecting) and session and session.last_intent:
+        intent = session.last_intent
+        outfit_index = 0
+        if temp_for_lookup is None:
+            temp_for_lookup = session.last_temp_c
+    # ===================== CHANGE END =====================
+
+    recommended_outfit = "Not applicable. No occasion or temperature context is available."
+    used_default_temp = False
+    # Occasion is known but temperature genuinely couldn't be resolved
+    # (no location on, nothing typed/detected). Rather than silently
+    # skipping grounding, fall back to a mild default so the engine still
+    # runs — but flag it so Gemini is told to be upfront about the
+    # assumption instead of pretending it's the real weather.
     if intent and temp_for_lookup is None:
         temp_for_lookup = DEFAULT_TEMP_C
         used_default_temp = True
-    # ===================== CHANGE END =====================
+
     if intent and temp_for_lookup is not None:
         try:
             results = get_recommendations(wardrobe_context, temp_c=temp_for_lookup, intent=intent, top_k=1, style_preference=style_preference)
@@ -216,8 +244,8 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
                     "longer the engine's ranked picks, just your own suggestion from what's left "
                     "in their closet."
                 )
-            # NEW — tells Gemini to disclose the assumed temperature,
-            # rather than presenting it as if it were the real weather
+            # Tells Gemini to disclose the assumed temperature, rather
+            # than presenting it as if it were the real weather
             if used_default_temp and isinstance(recommended_outfit, dict):
                 recommended_outfit = {**recommended_outfit, "_note_to_ai": (
                     f"No real temperature was available, so a default of {DEFAULT_TEMP_C}°C was assumed for "
@@ -230,10 +258,10 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
                 session.last_intent = intent
                 session.last_outfit_index = outfit_index
                 session.last_temp_c = temp_for_lookup
-                session.save(update_fields=["last_intent", "last_outfit_index", "last_temp_c"])
+                session.last_style_preference = style_preference
+                session.save(update_fields=["last_intent", "last_outfit_index", "last_temp_c", "last_style_preference"])
         except Exception:
-            recommended_outfit = "not applicable — recommendation engine error"
-    # ===================== CHANGE END =====================
+            recommended_outfit = "Not applicable. Recommendation engine error."
 
     recent = ChatMessage.objects.filter(owner=user, session=session).order_by("-created_at")[:10]
     history_text = "\n".join(f"{m.role}: {m.text}" for m in reversed(list(recent)))

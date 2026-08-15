@@ -89,11 +89,13 @@ class Outfit(models.Model):
     country = models.CharField(max_length=100, blank=True)
     style_preference = models.CharField(max_length=20, blank=True)  # "safe" or "bold"
 
-    # on_delete=SET_NULL: if the underlying wardrobe item gets deleted later,
-    # the outfit itself isn't deleted too — it just loses that one reference
-    top = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
-    bottom = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
-    jacket = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    # if a WardrobeItem that's part of a saved outfit gets
+    # deleted, Django automatically deletes the ENTIRE Outfit row too,
+    # instead of leaving it behind with a missing piece.
+    top = models.ForeignKey(WardrobeItem, on_delete=models.CASCADE, null=True, blank=True, related_name="+")
+    bottom = models.ForeignKey(WardrobeItem, on_delete=models.CASCADE, null=True, blank=True, related_name="+")
+    jacket = models.ForeignKey(WardrobeItem, on_delete=models.CASCADE, null=True, blank=True, related_name="+")
+
 
     saved_at = models.DateTimeField(auto_now_add=True)
 
@@ -114,7 +116,8 @@ class ChatSession(models.Model):
     # engine, instead of Gemini inventing a substitute on its own.
     last_intent = models.CharField(max_length=20, blank=True)
     last_outfit_index = models.IntegerField(default=0)
-    last_temp_c = models.FloatField(null=True, blank=True)  # NEW — so a temperature-less follow-up ("something else") can still fall back to what was already established
+    last_temp_c = models.FloatField(null=True, blank=True)
+    last_style_preference = models.CharField(max_length=20, blank=True)  # NEW — so "safe"/"bold" persists across a conversation the same way intent/temperature already do
     # ===================== CHANGE END =====================
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

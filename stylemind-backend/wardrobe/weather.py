@@ -233,5 +233,5 @@ def get_rain_nudge(weather_info):
 
     return {
         "icon": "umbrella",
-        "message": "Looks like rain — consider grabbing an umbrella or raincoat.",
+        "message": "Looks like rain. Consider carrying an umbrella or wearing a raincoat.",
     }
