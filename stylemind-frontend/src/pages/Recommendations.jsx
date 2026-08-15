@@ -401,7 +401,7 @@ export default function Recommendations({ user, onLogout }) {
                 </p>
                 {recommendationHasFallback && (
                   <p className="text-xs text-amber-700 mb-6">
-                    ⚠ Includes an off-season pick — nothing better matched today's weather in your wardrobe.
+                    ⚠ Off season pick. Nothing in your wardrobe matched today’s weather better.
                   </p>
                 )}
 
@@ -437,7 +437,7 @@ export default function Recommendations({ user, onLogout }) {
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button
-                    onClick={() => alert("Try on Avatar — connects to Member B's 3D avatar once ready")}
+                    onClick={() => alert("Try on Avatar. Connects to Member B’s 3D avatar once ready.")}
                     className="flex-1 py-3 rounded-xl bg-ink text-white text-sm font-medium"
                   >
                     Try on Avatar

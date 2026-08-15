@@ -1,26 +1,24 @@
 # wardrobe/views.py
 import time
 import threading
+import hashlib  # NEW — was used in upload_item's duplicate check below but never imported (would have thrown NameError on first upload)
 from io import BytesIO
 from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny  # AllowAny ADDED — needed by the new health() endpoint below
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
-from django.db import connections  # NEW — used to close DB connections cleanly inside background threads
+from django.db import connections
 
 from .models import Profile, WardrobeItem, Outfit, ChatMessage, ChatSession
 from .serializers import SignupSerializer, ProfileSerializer, WardrobeItemSerializer, OutfitSerializer, ChatSessionSerializer
-from src.predict import predict            # the ML classification pipeline (category/texture/season/colors)
-from .weather import resolve_temperature, get_rain_nudge  # CHANGED — merged what used to be two separate import lines
-from src.recommend.recommend import get_recommendations   # the outfit-matching algorithm
+from src.predict import predict
+from .weather import resolve_temperature, get_rain_nudge
+from src.recommend.recommend import get_recommendations
 
 from .chatbot import get_stylist_reply
 
-# NEW — set once, when this module is first loaded (i.e. at process
-# start). Lets the frontend detect "the backend restarted since I last
-# checked" by comparing this value over time via GET /api/health/.
 SERVER_STARTED_AT = time.time()
 
 
@@ -28,7 +26,6 @@ SERVER_STARTED_AT = time.time()
 # HEALTH
 # ────────────────────────────────────────────────
 
-# GET /api/health/ — lets the frontend detect a backend restart
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def health(request):
@@ -39,17 +36,15 @@ def health(request):
 # AUTH
 # ────────────────────────────────────────────────
 
-# POST /api/signup/ — creates a new account
 @api_view(["POST"])
 def signup(request):
     serializer = SignupSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()  # creates both the User and Profile rows
+        serializer.save()
         return Response({"message": "User created"}, status=201)
     return Response(serializer.errors, status=400)
 
 
-# GET /api/me/ — fetch profile. PATCH /api/me/ — update display_name and/or profile_picture.
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser])
@@ -59,14 +54,9 @@ def me(request):
         defaults={"display_name": request.user.username, "email": request.user.email},
     )
     if request.method == "PATCH":
-        # Explicit "remove photo" support. A plain empty value in
-        # multipart form data doesn't reliably tell DRF's ImageField to
-        # clear itself, so the frontend sends a dedicated remove_picture
-        # flag instead, handled directly here before the normal serializer
-        # update runs.
         if request.data.get("remove_picture") == "true":
             if profile.profile_picture:
-                profile.profile_picture.delete(save=False)  # deletes the actual file from disk
+                profile.profile_picture.delete(save=False)
             profile.profile_picture = None
             profile.save()
 
@@ -82,19 +72,13 @@ def me(request):
 # WARDROBE
 # ────────────────────────────────────────────────
 
-# GET /api/wardrobe/ — lists only the logged-in user's own items
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def list_wardrobe(request):
-    items = WardrobeItem.objects.filter(owner=request.user).order_by("-uploaded_at")  # newest first
+    items = WardrobeItem.objects.filter(owner=request.user).order_by("-uploaded_at")
     return Response(WardrobeItemSerializer(items, many=True).data)
 
 
-# ===================== CHANGE START =====================
-# NEW — runs the actual ML pipeline (YOLO segmentation, classification,
-# color extraction) in a background thread, so upload_item can return to
-# the browser almost immediately instead of blocking for however long
-# that pipeline takes.
 def _process_item_async(item_id):
     try:
         item = WardrobeItem.objects.get(id=item_id)
@@ -124,13 +108,9 @@ def _process_item_async(item_id):
         except Exception:
             pass
     finally:
-        # Each thread opens its own DB connection — close it explicitly so
-        # connections don't pile up across repeated uploads
         connections.close_all()
 
 
-# POST /api/wardrobe/upload/ — uploads a photo, returns immediately, and
-# runs classification in the background (see _process_item_async above)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser])
@@ -139,8 +119,50 @@ def upload_item(request):
     if not image_file:
         return Response({"error": "No image provided"}, status=400)
 
-    # Created immediately with placeholder values and status="processing" —
-    # the frontend shows this right away, then polls until it flips to "done"
+    file_bytes = image_file.read()
+    image_file.seek(0)
+    image_hash = hashlib.sha256(file_bytes).hexdigest()
+
+    # If this exact photo (by content, not filename) already exists for
+    # this user, skip the ML pipeline entirely (same bytes = guaranteed
+    # same classification result — re-running it would be pure waste),
+    # copy the matched item's classification data, and flag it for the
+    # user to confirm keep/discard.
+    existing_match = WardrobeItem.objects.filter(owner=request.user, image_hash=image_hash).first()
+
+    if existing_match:
+        item = WardrobeItem.objects.create(
+            owner=request.user,
+            image=image_file,
+            category=existing_match.category,
+            category_confidence=existing_match.category_confidence,
+            texture=existing_match.texture,
+            texture_confidence=existing_match.texture_confidence,
+            season=existing_match.season,
+            season_confidence=existing_match.season_confidence,
+            season_probs=existing_match.season_probs,
+            dominant_colors=existing_match.dominant_colors,
+            mask_found=existing_match.mask_found,
+            status="duplicate_review",
+            image_hash=image_hash,
+            possible_duplicate_of=existing_match,
+        )
+        # ===================== CHANGE START =====================
+        # NEW — copies the already-generated background-removed image
+        # too. Identical input bytes guarantee an identical segmentation
+        # result, so there's no need to re-run YOLO for this — just reuse
+        # the file that's already sitting on disk.
+        if existing_match.processed_image:
+            existing_match.processed_image.open("rb")
+            item.processed_image.save(
+                existing_match.processed_image.name.split("/")[-1],
+                ContentFile(existing_match.processed_image.read()),
+                save=True,
+            )
+            existing_match.processed_image.close()
+        # ===================== CHANGE END =====================
+        return Response(WardrobeItemSerializer(item).data, status=202)
+
     item = WardrobeItem.objects.create(
         owner=request.user,
         image=image_file,
@@ -149,44 +171,54 @@ def upload_item(request):
         season="", season_confidence=0,
         season_probs={}, dominant_colors=[], mask_found=False,
         status="processing",
+        image_hash=image_hash,
     )
 
     thread = threading.Thread(target=_process_item_async, args=(item.id,), daemon=True)
     thread.start()
 
-    return Response(WardrobeItemSerializer(item).data, status=202)  # 202 Accepted — processing isn't finished yet
-# ===================== CHANGE END =====================
+    return Response(WardrobeItemSerializer(item).data, status=202)
 
 
-# DELETE /api/wardrobe/<item_id>/ — removes one item
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_item(request, item_id):
-    # get_object_or_404 with owner=request.user filter means: if the item
-    # doesn't exist OR belongs to someone else, return a 404 either way
-    # (never reveal "this item exists but isn't yours")
     item = get_object_or_404(WardrobeItem, id=item_id, owner=request.user)
     item.delete()
-    return Response(status=204)  # 204 = success, no content to return
+    return Response(status=204)
 
 
-# PATCH /api/wardrobe/<item_id>/favorite/ — toggles/sets favorite
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
 def toggle_favorite(request, item_id):
     item = get_object_or_404(WardrobeItem, id=item_id, owner=request.user)
-    # If the frontend sends a specific true/false, use that; otherwise flip
-    # whatever the current value is
     item.favorite = request.data.get("favorite", not item.favorite)
     item.save()
     return Response(WardrobeItemSerializer(item).data)
+
+
+# ===================== CHANGE START =====================
+# NEW — PATCH /api/wardrobe/<id>/resolve-duplicate/ — { "keep": true/false }
+# keep=true: user confirms it's fine, marks it "done"
+# keep=false: deletes it
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def resolve_duplicate(request, item_id):
+    item = get_object_or_404(WardrobeItem, id=item_id, owner=request.user)
+    if request.data.get("keep"):
+        item.status = "done"
+        item.save(update_fields=["status"])
+        return Response(WardrobeItemSerializer(item).data)
+    else:
+        item.delete()
+        return Response(status=204)
+# ===================== CHANGE END =====================
 
 
 # ────────────────────────────────────────────────
 # RECOMMENDATIONS
 # ────────────────────────────────────────────────
 
-# GET /api/recommend/?lat=...&lon=...&temp_c=...&intent=...&style_preference=...&top_k=...
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def recommend(request):
@@ -194,9 +226,6 @@ def recommend(request):
     lon = request.GET.get("lon")
     manual_temp = request.GET.get("temp_c")
 
-    # Goes through the shared resolve_temperature() helper, which accepts
-    # lat/lon (GPS) as a middle priority between a typed city and the
-    # manual slider value.
     try:
         temp_c, weather_info = resolve_temperature(lat=lat, lon=lon, manual_temp=manual_temp)
     except ValueError as e:
@@ -206,14 +235,7 @@ def recommend(request):
     style_preference = request.GET.get("style_preference", "safe")
     top_k = int(request.GET.get("top_k", 3))
 
-    # ===================== CHANGE START =====================
-    # CHANGED — added .order_by("id") so the wardrobe comes back in the
-    # SAME order every time. Without it, when multiple outfits are tied
-    # in score, which one "wins" as the top pick could differ between
-    # separate requests purely due to unordered row order — not an
-    # actual disagreement in the scoring logic itself.
     items = WardrobeItem.objects.filter(owner=request.user).order_by("id")
-    # ===================== CHANGE END =====================
     wardrobe = [WardrobeItemSerializer(i).data for i in items]
     results = get_recommendations(wardrobe, temp_c=temp_c, intent=intent, top_k=top_k, style_preference=style_preference)
 
@@ -222,29 +244,18 @@ def recommend(request):
     return Response({
         "weather": weather_info,
         "recommendations": results,
-        # `results` already contains the full ranked pool (up to
-        # browse_pool_size, default 15), not just top_k. initial_count tells
-        # the frontend how many to show upfront; the rest is already here
-        # for "browse more" with zero extra requests or re-scoring.
         "initial_count": top_k,
         "rain_nudge": rain_nudge,
     })
 
 
-# GET/POST /api/outfits/ — list saved outfits, or save a new one
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def outfits(request):
     if request.method == "GET":
-        # Return only this user's saved outfits, most recent first
         saved = Outfit.objects.filter(owner=request.user).order_by("-saved_at")
         return Response(OutfitSerializer(saved, many=True).data)
 
-    # POST — saving a new outfit.
-    # Security check: before trusting the submitted top/bottom/jacket IDs,
-    # confirm each one actually belongs to the logged-in user. Without
-    # this, someone could submit another user's item ID and "save" an
-    # outfit using clothes that aren't theirs.
     for field in ["top", "bottom", "jacket"]:
         item_id = request.data.get(field)
         if item_id:
@@ -252,14 +263,11 @@ def outfits(request):
 
     serializer = OutfitSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(owner=request.user)  # owner is set here, not trusted from the request body
+        serializer.save(owner=request.user)
         return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
 
 
-# DELETE /api/outfits/<outfit_id>/ — removes one saved outfit.
-# Deleting an Outfit does NOT delete the underlying WardrobeItems it
-# references — it only removes the "these items go together" record.
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_outfit(request, outfit_id):
@@ -271,20 +279,11 @@ def delete_outfit(request, outfit_id):
 # ────────────────────────────────────────────────
 # CHATBOT
 # ────────────────────────────────────────────────
-# Gemini is called directly from Django (see chatbot.py), with real
-# wardrobe/weather/preference data pulled from the database — this
-# replaces the old standalone chat-proxy Node server entirely.
 
-# ===================== CHANGE START =====================
-# CHANGED — this file previously had `chat()` defined TWICE (Python
-# silently keeps only the last one, making the first a dead duplicate).
-# Consolidated into a single, correct version here.
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def chat(request):
     if request.method == "GET":
-        # Requires a session id, and only returns THAT session's
-        # messages, not everything the user has ever sent
         session_id = request.GET.get("session")
         if not session_id:
             return Response({"error": "session query param is required"}, status=400)
@@ -296,7 +295,6 @@ def chat(request):
         ]
         return Response(data)
 
-    # POST — send a new message within a specific session
     message = request.data.get("message", "").strip()
     session_id = request.data.get("session")
     lat = request.data.get("lat")
@@ -316,18 +314,13 @@ def chat(request):
 
     ChatMessage.objects.create(owner=request.user, session=session, role="assistant", text=reply_text, segments=segments)
 
-    # Auto-title the session from the first message, and bump updated_at
-    # (via save(), thanks to auto_now=True) so it sorts to the top of the sidebar
     if not session.title:
         session.title = message[:40] + ("…" if len(message) > 40 else "")
     session.save()
 
     return Response({"segments": segments})
-# ===================== CHANGE END =====================
 
 
-# GET /api/chat/sessions/ — list this user's chat sessions (for the
-# sidebar). POST — start a brand new empty one (the "New Chat" button)
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def chat_sessions(request):
@@ -339,9 +332,6 @@ def chat_sessions(request):
     return Response(ChatSessionSerializer(session).data, status=201)
 
 
-# PATCH/DELETE /api/chat/sessions/<id>/ — rename or delete one specific
-# conversation. Deleting a session also deletes all its messages
-# automatically (ChatMessage.session has on_delete=CASCADE).
 @api_view(["PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def chat_session_detail(request, session_id):

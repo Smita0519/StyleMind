@@ -64,7 +64,7 @@ export default function Outfits({ user, onLogout }) {
 
         {filtered.length === 0 ? (
           <div className="rounded-2xl border border-[#EAEAEA] bg-white p-10 text-center text-graytext text-sm">
-            No saved outfits yet — generate one on the Recommendations page and click "Save Outfit."
+            No saved outfits yet. Generate one on the Recommendations page and click “Save Outfit.”"
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">

@@ -45,15 +45,24 @@ class WardrobeItem(models.Model):
     favorite = models.BooleanField(default=False)
 
     # ===================== CHANGE START =====================
-    # NEW — tracks background processing state. Upload now returns
-    # immediately with status="processing" while the ML pipeline
-    # (YOLO segmentation → classification → color extraction) runs in a
-    # background thread; it flips to "done" or "failed" once that
-    # finishes. default="done" so EXISTING rows (already fully processed
-    # under the old synchronous flow) aren't incorrectly marked as still
-    # processing after this migration runs.
-    STATUS_CHOICES = [("processing", "Processing"), ("done", "Done"), ("failed", "Failed")]
+    # NEW — "duplicate_review" is a third state: this item's photo exactly
+    # matches one already in the wardrobe, so it's held for the user to
+    # confirm keep/discard instead of silently becoming "done".
+    STATUS_CHOICES = [
+        ("processing", "Processing"),
+        ("done", "Done"),
+        ("failed", "Failed"),
+        ("duplicate_review", "Possible Duplicate"),
+    ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="done")
+
+    # SHA-256 of the raw uploaded file bytes — catches the exact same
+    # photo being re-uploaded, even if renamed
+    image_hash = models.CharField(max_length=64, blank=True, db_index=True)
+
+    # Points at the existing item this one's photo matches, once flagged.
+    # on_delete=SET_NULL so deleting the original doesn't cascade-delete this one.
+    possible_duplicate_of = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     # ===================== CHANGE END =====================
 
     uploaded_at = models.DateTimeField(auto_now_add=True)  # auto-set when the row is created

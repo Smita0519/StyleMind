@@ -63,7 +63,7 @@ export default function UploadModal({ onClose, onAdd }) {
         )}
 
         <p className="text-xs text-graytext mb-4">
-          {files.length > 1 ? `${files.length} photos selected — ` : ""}
+          {files.length > 1 ? `${files.length} Photos selected:` : ""}
           Category, texture, season, and dominant colors will be detected automatically once uploaded.
         </p>
 

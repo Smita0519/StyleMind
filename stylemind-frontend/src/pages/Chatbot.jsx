@@ -69,7 +69,7 @@ export default function Chatbot({ user, onLogout }) {
                 disabled={locationStatus === "requesting"}
                 title={
                   locationStatus === "on"
-                    ? "Location on — tap to turn off"
+                    ? "Location on. Tap to turn off"
                     : locationStatus === "requesting"
                     ? "Turning on location…"
                     : "Turn on location for weather"

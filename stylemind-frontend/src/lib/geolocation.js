@@ -18,8 +18,8 @@ export function getCurrentLocation() {
       // Failure — err.code: 1 = user denied permission, 2 = position
       // unavailable, 3 = timed out. Give a friendly message either way.
       (err) => {
-        if (err.code === 1) reject(new Error("Location permission denied — you can still type a city manually."));
-        else reject(new Error("Couldn't get your location — you can still type a city manually."));
+        if (err.code === 1) reject(new Error("Location permission denied. You can still enter a temperature manually."));
+        else reject(new Error("Location permission denied. Enter your temperature manually to continue."));
       },
       { timeout: 10000 }
     );

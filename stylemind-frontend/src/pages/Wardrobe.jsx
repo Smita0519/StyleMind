@@ -15,7 +15,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 // (intent isn't stored on the item itself, see filtering.py on the backend)
 import { occasionOptions, getIntentsForCategory } from "../mock/outfits";
 // All real backend calls this page needs — wardrobe list/upload/delete/favorite
-import { getWardrobe, uploadWardrobeItem, deleteWardrobeItem, toggleFavorite } from "../lib/api";
+import { getWardrobe, uploadWardrobeItem, deleteWardrobeItem, toggleFavorite, resolveDuplicate } from "../lib/api";
 
 export default function Wardrobe({ user, onLogout }) {
   // ── Data state ──
@@ -55,6 +55,19 @@ export default function Wardrobe({ user, onLogout }) {
       setItems((prev) => prev.map((item) => (item.id === id ? updated : item)));
     } catch (err) {
       alert("Failed to update favorite: " + err.message);
+    }
+  }
+
+  async function handleResolveDuplicate(id, keep) {
+    try {
+      const result = await resolveDuplicate(id, keep);
+      if (keep && result) {
+        setItems((prev) => prev.map((item) => (item.id === id ? result : item)));
+      } else {
+        setItems((prev) => prev.filter((item) => item.id !== id));
+      }
+    } catch (err) {
+      alert("Failed to resolve: " + err.message);
     }
   }
 
@@ -296,6 +309,7 @@ export default function Wardrobe({ user, onLogout }) {
                   isFavorite={item.favorite}
                   onToggleFavorite={handleToggleFavorite}
                   onOpen={setPreviewItem}
+                  onResolveDuplicate={handleResolveDuplicate}
                 />
               ))}
             </div>

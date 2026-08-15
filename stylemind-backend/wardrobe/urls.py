@@ -9,6 +9,7 @@ urlpatterns = [
     path("me/", views.me, name="me"),
     path("wardrobe/<int:item_id>/", views.delete_item, name="delete_item"),
     path("wardrobe/<int:item_id>/favorite/", views.toggle_favorite, name="toggle_favorite"),
+    path("wardrobe/<int:item_id>/resolve-duplicate/", views.resolve_duplicate, name="resolve_duplicate"),
     path("outfits/", views.outfits, name="outfits"),
     path("outfits/<int:outfit_id>/", views.delete_outfit, name="delete_outfit"),
     path("health/", views.health, name="health"),  # NEW — lets the frontend detect a backend restart

@@ -180,7 +180,7 @@ export function useChat(initialMessage) {
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          segments: [{ type: "text", text: "Sorry, I'm having trouble connecting right now — your message was added here, but the reply couldn't be fetched." }],
+          segments: [{ type: "text", text: "Sorry, I’m having trouble connecting right now. Your message was added here, but I couldn’t fetch a reply." }],
           timestamp: timestamp(),
         },
       ]);

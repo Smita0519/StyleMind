@@ -169,6 +169,29 @@ export async function toggleFavorite(itemId, favorite) {
     processedImageUrl: item.processed_image ? `${BACKEND}${item.processed_image}` : null,
   };
 }
+
+// NEW — user confirms whether a flagged exact-photo duplicate should be kept or discarded
+export async function resolveDuplicate(itemId, keep) {
+  const res = await fetch(`${BACKEND}/api/wardrobe/${itemId}/resolve-duplicate/`, {
+    method: "PATCH",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ keep }),
+  });
+  if (!res.ok) throw new Error("Failed to resolve duplicate");
+  if (res.status === 204) return null; // discarded — nothing to map
+
+  // CHANGED — was returning the raw response as-is, which has `image`/
+  // `processed_image` (relative paths) but no imageUrl/processedImageUrl,
+  // so WardrobeCard's `item.processedImageUrl || item.imageUrl` check
+  // found nothing to render. Now built the same way every other
+  // wardrobe-returning function in this file already does.
+  const item = await res.json();
+  return {
+    ...item,
+    imageUrl: item.image ? `${BACKEND}${item.image}` : null,
+    processedImageUrl: item.processed_image ? `${BACKEND}${item.processed_image}` : null,
+  };
+}
 // ────────────────────────────────────────────────────────────
 // RECOMMENDATIONS — asks the real recommendation engine for an outfit
 // ────────────────────────────────────────────────────────────

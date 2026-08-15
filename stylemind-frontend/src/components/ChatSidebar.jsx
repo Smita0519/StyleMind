@@ -209,7 +209,7 @@ export default function ChatSidebar({ sessions, activeSessionId, onSelectSession
 <ConfirmDialog
   open={!!confirmDeleteId}
   title="Delete this conversation?"
-  message="This can't be undone — all messages in it will be permanently removed."
+  message="This action can’t be undone. All messages in this conversation will be permanently deleted."
   onConfirm={confirmDelete}
   onCancel={() => setConfirmDeleteId(null)}
 />

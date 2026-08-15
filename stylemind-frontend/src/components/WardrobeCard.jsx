@@ -1,7 +1,6 @@
 import { Heart, Trash2 } from "lucide-react";
 
-export default function WardrobeCard({ item, onDelete, isFavorite, onToggleFavorite, onOpen }) {
-  return (
+export default function WardrobeCard({ item, onDelete, isFavorite, onToggleFavorite, onOpen, onResolveDuplicate }) {  return (
     <div className="bg-white border border-[#CFA187] rounded-xl overflow-hidden hover:shadow-md transition-shadow group">
       <div
         className="relative aspect-square bg-[#F3E4E8] flex items-center justify-center cursor-pointer"
@@ -31,6 +30,31 @@ export default function WardrobeCard({ item, onDelete, isFavorite, onToggleFavor
           <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center gap-1 z-10 px-3 text-center">
             <span className="text-xs text-red-500 font-medium">Processing failed</span>
             <span className="text-[10px] text-graytext">Try deleting and re-uploading</span>
+          </div>
+        )}
+        {/* NEW — exact-photo duplicate review overlay */}
+        {item.status === "duplicate_review" && (
+          <div className="absolute inset-0 bg-white/95 flex flex-col items-center justify-center gap-2 z-10 px-3 text-center">
+            <span className="text-xs font-medium text-amber-600">Same photo already in your wardrobe</span>
+            {item.possible_duplicate_of_detail && (
+              <span className="text-[10px] text-graytext">
+                Matches your existing {item.possible_duplicate_of_detail.category}
+              </span>
+            )}
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); onResolveDuplicate(item.id, true); }}
+                className="text-[10px] px-2.5 py-1 rounded-full bg-ink text-white hover:opacity-90"
+              >
+                Keep anyway
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onResolveDuplicate(item.id, false); }}
+                className="text-[10px] px-2.5 py-1 rounded-full border border-red-300 text-red-500 hover:bg-red-50"
+              >
+                Discard
+              </button>
+            </div>
           </div>
         )}
         {/* ===================== CHANGE END ===================== */}

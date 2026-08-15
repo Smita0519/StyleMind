@@ -57,24 +57,23 @@ class ProfileSerializer(serializers.Serializer):
 
 
 class WardrobeItemSerializer(serializers.ModelSerializer):
-    # ===================== CHANGE START =====================
-    # NEW — real count of how many saved outfits include this item as
-    # top, bottom, OR jacket. Replaces the old localStorage-only counter
-    # in the frontend (lib/localData.js), which was never connected to
-    # the real /api/outfits/ endpoint and so never actually incremented.
-    # SerializerMethodField is automatically included even with
-    # fields = "__all__" below, since DRF includes all declared fields
-    # on top of the model's own fields in that mode.
     selection_count = serializers.SerializerMethodField()
+    # NEW — nested detail of the existing item this one's photo matches,
+    # so the frontend can show its real category, not just an id
+    possible_duplicate_of_detail = serializers.SerializerMethodField()
 
     def get_selection_count(self, obj):
         return Outfit.objects.filter(Q(top=obj) | Q(bottom=obj) | Q(jacket=obj)).count()
-    # ===================== CHANGE END =====================
+
+    def get_possible_duplicate_of_detail(self, obj):
+        if obj.possible_duplicate_of:
+            return WardrobeItemSerializer(obj.possible_duplicate_of).data
+        return None
 
     class Meta:
         model = WardrobeItem
         fields = "__all__"
-        read_only_fields = ["owner"]  # frontend can't set/change who owns an item
+        read_only_fields = ["owner"]
 
 # ===================== CHANGE START =====================
 # New: serializes a saved Outfit. Includes both the raw IDs (top/bottom/

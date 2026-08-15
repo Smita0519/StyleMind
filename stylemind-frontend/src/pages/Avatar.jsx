@@ -168,7 +168,7 @@ export default function Avatar({ user, onLogout }) {
                 <button
                   key={i}
                   className="aspect-square rounded-lg border border-[#EAEAEA] bg-[#F3E4E8] hover:border-ink transition-colors"
-                  onClick={() => alert(`Selecting ${activeTab} item ${i + 1} — connects to real wardrobe once ready`)}
+                  onClick={() => alert(`Selecting ${activeTab} item ${i + 1}. Connects to your wardrobe once ready.`)}
                 />
               ))}
             </div>

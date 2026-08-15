@@ -40,7 +40,7 @@ export default function FloatingChatbot() {
               className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                 locationStatus === "on" ? "bg-green-50 text-green-600" : "bg-white text-graytext"
               }`}
-              title={locationStatus === "on" ? "Location on — click to turn off" : "Turn on location for weather"}
+              title={locationStatus === "on" ? "Location on • Tap to turn off" : "Turn on location for weather"}
             >
               <MapPin size={14} />
             </button>
