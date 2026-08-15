@@ -7,5 +7,25 @@ __pycache__/
 media/
 db.sqlite3
 *.log
-models/*.keras
-models/*.pt
+
+# Model checkpoints 
+**/models/*.keras
+**/models/*.pt
+*.keras
+*.h5
+*.pt
+*.pth
+
+# Dataset
+data/
+**/data/
+
+# Archives
+*.zip
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

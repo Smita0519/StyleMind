@@ -16,7 +16,7 @@ jointly, each with its own small dense branch and softmax output.
 from tensorflow.keras import Model, layers
 from tensorflow.keras.applications import MobileNetV2
 
-from config import IMG_SIZE, PHASE1_LEARNING_RATE
+from config import IMG_SIZE, LABEL_SMOOTHING, PHASE1_LEARNING_RATE
 import tensorflow as tf
 
 
@@ -53,15 +53,39 @@ def build_model(num_category, num_texture, num_season):
     return model, base_model
 
 
-def compile_model(model, learning_rate=PHASE1_LEARNING_RATE):
+def _make_smoothed_sparse_loss(num_classes, label_smoothing=LABEL_SMOOTHING):
+    """
+    Labels stay as sparse integer indices throughout step7's tf.data
+    pipeline (no format change needed there) - this loss just one-hots
+    them on the fly so tf.keras.losses.CategoricalCrossentropy's
+    label_smoothing can be applied. (SparseCategoricalCrossentropy has no
+    label_smoothing argument in this TF version, hence the wrapper.)
+
+    v2: replaces the original class-weighted loss experiment (rejected -
+    it hurt solid-class recall). Smoothing softens targets uniformly
+    instead of reweighting specific classes, which should reduce
+    overconfidence on majority classes without the same recall tradeoff.
+    """
+    cce = tf.keras.losses.CategoricalCrossentropy(label_smoothing=label_smoothing)
+
+    def loss_fn(y_true, y_pred):
+        y_true_onehot = tf.one_hot(tf.cast(y_true, tf.int32), depth=num_classes)
+        return cce(y_true_onehot, y_pred)
+
+    return loss_fn
+
+
+def compile_model(model, num_category, num_texture, num_season, learning_rate=PHASE1_LEARNING_RATE):
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
         loss={
-            "category": "sparse_categorical_crossentropy",
-            "texture": "sparse_categorical_crossentropy",
-            "season": "sparse_categorical_crossentropy",
+            "category": _make_smoothed_sparse_loss(num_category),
+            "texture": _make_smoothed_sparse_loss(num_texture),
+            "season": _make_smoothed_sparse_loss(num_season),
         },
         loss_weights={"category": 1.0, "texture": 1.0, "season": 1.0},
+        # Metrics still compare raw sparse labels vs softmax output directly,
+        # unaffected by the one-hot/smoothing happening inside the loss.
         metrics={"category": "accuracy", "texture": "accuracy", "season": "accuracy"},
     )
     return model
@@ -71,5 +95,5 @@ if __name__ == "__main__":
     # Example shapes matching the final dataset (10 categories, 7 textures,
     # 4 season classes including the 'all-season' fallback outcome)
     model, base_model = build_model(num_category=10, num_texture=7, num_season=4)
-    compile_model(model)
+    compile_model(model, num_category=10, num_texture=7, num_season=4)
     model.summary()

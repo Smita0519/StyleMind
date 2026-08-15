@@ -1,0 +1,13 @@
+# Requirements for the COLAB DATA-PREP package (Steps 1-6).
+# Run these cells on a Colab GPU runtime (Runtime -> Change runtime type -> GPU).
+# Colab already ships torch and a CUDA build, so pip installing torch here
+# is usually a no-op - this list is what's NOT preinstalled and needs
+# an explicit install.
+
+Pillow>=10.0
+pandas>=2.0
+scikit-learn>=1.3
+numpy>=1.26,<2.0
+ultralytics>=8.1
+huggingface_hub>=0.20
+open_clip_torch>=2.24
