@@ -13,7 +13,7 @@ FULL_BODY = {"Dress"}
 INTENT_CATEGORY_MAP = {
     "Formal": {"Formal_Pant", "Shirt"},
     "Casual": {"Top", "Warmwear", "Shirt", "Pants", "Shorts"},
-    "Picnic": {"Dress", "Top", "Skirt", "Shorts"},
+    "Picnic": {"Dress", "Top", "Skirt", "Shorts", "Pants"},
     "Travel": {"Top", "Warmwear", "Pants"},
 }
 VALID_INTENTS = set(INTENT_CATEGORY_MAP.keys())
@@ -27,6 +27,19 @@ def get_weather_bucket(temp_c):
     else:
         return "fall"
 
+# Ranks how good a match an item's season is for the current weather
+# bucket. 0 = exact match. 1 = acceptable substitute (all-season, or the
+# "nearby" season). 2 = the wrong season — should carry an off-season
+# badge and be shown only as a last resort.
+SEASON_TIER_MAP = {
+    "winter": {"winter": 0, "all-season": 1, "fall": 1, "summer": 2},
+    "summer": {"summer": 0, "all-season": 1, "fall": 1, "winter": 2},
+    "fall":   {"fall": 0,   "all-season": 1, "summer": 2, "winter": 2},
+}
+
+
+def get_season_tier(item_season, weather_bucket):
+    return SEASON_TIER_MAP.get(weather_bucket, {}).get(item_season, 2)
 
 # Below this confidence, we don't fully trust the season label for hard
 # filtering — the item is treated as "all-season" so a shaky guess can't
@@ -37,8 +50,9 @@ SEASON_CONFIDENCE_THRESHOLD = 0.5
 
 def passes_weather_filter(item, weather_bucket):
     if item.get("season_confidence", 1.0) < SEASON_CONFIDENCE_THRESHOLD:
-        return True  # unreliable label — don't hard-filter on it
-    return item["season"] == weather_bucket or item["season"] == "all-season"
+        item["season_uncertain"] = True
+        return True
+    return get_season_tier(item["season"], weather_bucket) <= 1
 
 
 def passes_intent_filter(item, intent):

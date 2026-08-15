@@ -12,12 +12,8 @@ urlpatterns = [
     path("wardrobe/<int:item_id>/resolve-duplicate/", views.resolve_duplicate, name="resolve_duplicate"),
     path("outfits/", views.outfits, name="outfits"),
     path("outfits/<int:outfit_id>/", views.delete_outfit, name="delete_outfit"),
-    path("health/", views.health, name="health"),  # NEW — lets the frontend detect a backend restart
-    # ===================== CHANGE START =====================
-    # FIXED — this route was completely missing, even though the view
-    # function for it (chat_sessions) already existed in views.py
+    path("health/", views.health, name="health"),
     path("chat/sessions/", views.chat_sessions, name="chat_sessions"),
-    # ===================== CHANGE END =====================
     path("chat/sessions/<int:session_id>/", views.chat_session_detail, name="chat_session_detail"),
     path("chat/", views.chat, name="chat"),
 ]

@@ -116,7 +116,7 @@ This went through the most iteration — originally a separate Node/Express + Ge
 ```
 WEATHERAPI_KEY=your-weatherapi-com-key
 GEMINI_API_KEY=your-gemini-api-key
-# Database (PostgreSQL) — see settings.py
+DB_PASSWORD=your-database-password
 ```
 
 **Frontend `.env`:**

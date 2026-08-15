@@ -65,7 +65,21 @@ pip install -r requirements.txt
 # configure DB credentials in config/settings.py or .env
 python manage.py migrate
 python manage.py runserver
+npm run dev
 ```
+## Create .env files
+**Backend `.env`:**
+```
+WEATHERAPI_KEY=your-weatherapi-com-key
+GEMINI_API_KEY=your-gemini-api-key
+DB_PASSWORD=your-database-password
+```
+
+**Frontend `.env`:**
+```
+VITE_BACKEND_URL=http://localhost:8000
+```
+
 
 Model artifacts (`models/`) must sit as a sibling of `src/` — `predict.py` resolves paths relative to that.
 

@@ -1,5 +1,7 @@
 import random
-from src.recommend.filtering import filter_wardrobe, filter_wardrobe_with_fallback
+from src.recommend.filtering import (
+    filter_wardrobe, filter_wardrobe_with_fallback, get_weather_bucket, get_season_tier
+)
 from src.recommend.knn import pair_top_and_bottom, get_dresses, get_outerwear
 from src.recommend.color_harmony import score_item_pair
 from src.recommend.filtering import filter_by_weather_only
@@ -11,11 +13,24 @@ COLOR_WEIGHT = 0.4
 # similar-toned jackets take turns instead of one always winning.
 JACKET_TIE_MARGIN = 0.05
 
-# Small penalty applied to final_score when an outfit includes a
-# season_fallback item (e.g. a fall-weight pant used in winter because
-# nothing winter-specific was available). Keeps fallback outfits
-# competitive but not favored over a true seasonal match.
-SEASON_FALLBACK_PENALTY = 0.08
+# Penalty applied to final_score based on how well an item's season fits
+# the current weather bucket. Tier 0 (exact match) = no penalty.
+# Tier 1 (all-season / adjacent season, e.g. fall for winter) = small
+# penalty. Tier 2 (the wrong season, e.g. summer for winter) = larger
+# penalty — this is what should show the off-season badge.
+TIER_PENALTY = {0: 0.0, 1: 0.05, 2: 0.15}
+
+
+def season_penalty(item, weather_bucket):
+    if item is None:
+        return 0.0
+    tier = get_season_tier(item.get("season"), weather_bucket)
+    return TIER_PENALTY.get(tier, TIER_PENALTY[2])
+
+
+def is_off_season(item, weather_bucket):
+    return item is not None and get_season_tier(item.get("season"), weather_bucket) == 2
+
 
 # ===================== CHANGE START =====================
 # NEW — off-season fallback items should only ever be shown when the
@@ -34,31 +49,7 @@ MIN_TRUE_SEASON_OUTFITS = 5
 def knn_distance_to_similarity(distance):
     return 1.0 / (1.0 + distance)
 
-
-def has_fallback_item(*items):
-    """True if any of the given garments (top, bottom, dress, jacket) was
-    brought in via season fallback rather than a true seasonal match."""
-    return any(item is not None and item.get("season_fallback") for item in items)
-
-
-def find_best_jacket(garment_colors_list, jackets, style="safe", seed_key=None):
-    """
-    garment_colors_list: a list of "dominant_colors" lists, one per garment
-    already in the outfit — e.g. [top["dominant_colors"], bottom["dominant_colors"]]
-    for a top+bottom outfit, or just [dress["dominant_colors"]] for a dress.
-
-    The jacket is scored against EVERY garment separately and averaged, so a
-    jacket that matches the top but clashes with the bottom doesn't win just
-    because the bottom was ignored.
-
-    Any jacket within JACKET_TIE_MARGIN of the best score is treated as
-    "equally good." Among that tied group, the pick is deterministic per
-    outfit: seed_key (e.g. the outfit's item IDs) seeds a local random
-    generator, so the SAME outfit always resolves to the SAME jacket on
-    repeat calls, while DIFFERENT outfits still draw from different jackets
-    in the tie group — avoiding both "reran and got a different answer"
-    and a single jacket dominating every recommendation.
-    """
+def find_best_jacket(garment_colors_list, jackets, weather_bucket, style="safe", seed_key=None):
     if not jackets:
         return None, None
 
@@ -69,23 +60,18 @@ def find_best_jacket(garment_colors_list, jackets, style="safe", seed_key=None):
             for colors in garment_colors_list
         ]
         avg_score = sum(per_garment_scores) / len(per_garment_scores)
+        avg_score -= season_penalty(jacket, weather_bucket)
         scored_jackets.append((jacket, avg_score))
 
     best_score = max(score for _, score in scored_jackets)
     near_best = [(j, s) for j, s in scored_jackets if s >= best_score - JACKET_TIE_MARGIN]
 
-    rng = random.Random(str(seed_key))  # str cast — random.Random rejects raw tuples
+    rng = random.Random(str(seed_key))
     jacket, score = rng.choice(near_best)
     return jacket, round(score, 4)
 
 
-def score_candidates(filtered, jackets, style_preference, knn_pool_size):
-    """
-    Scores every viable top+bottom pairing (via KNN) and every dress in
-    `filtered` against the given jacket pool, using style_preference for
-    color harmony. Returns a flat, UNSORTED list of outfit dicts — the
-    caller sorts and diversifies it.
-    """
+def score_candidates(filtered, jackets, style_preference, knn_pool_size, weather_bucket):
     scored = []
     pairings = pair_top_and_bottom(filtered, k=knn_pool_size)
     for pairing in pairings:
@@ -94,31 +80,52 @@ def score_candidates(filtered, jackets, style_preference, knn_pool_size):
             knn_sim = knn_distance_to_similarity(distance)
             color_score = score_item_pair(top["dominant_colors"], bottom["dominant_colors"], style=style_preference)
             final_score = KNN_WEIGHT * knn_sim + COLOR_WEIGHT * color_score
-            if has_fallback_item(top, bottom):
-                final_score -= SEASON_FALLBACK_PENALTY
+            final_score -= season_penalty(top, weather_bucket)
+            final_score -= season_penalty(bottom, weather_bucket)
             jacket, jacket_score = find_best_jacket(
-                [top["dominant_colors"], bottom["dominant_colors"]], jackets,
+                [top["dominant_colors"], bottom["dominant_colors"]], jackets, weather_bucket,
                 style=style_preference, seed_key=(top["id"], bottom["id"])
             )
+            if jacket is not None:
+                final_score -= season_penalty(jacket, weather_bucket)
+
+            # NEW — stamp off_season directly onto each piece dict (not just
+            # the outfit as a whole), so the frontend can badge individual
+            # items regardless of whether they got here via the fallback pass
+            # or via the low-confidence "uncertain" pass-through in filtering.py.
+            top = dict(top, off_season=is_off_season(top, weather_bucket))
+            bottom = dict(bottom, off_season=is_off_season(bottom, weather_bucket))
+            if jacket is not None:
+                jacket = dict(jacket, off_season=is_off_season(jacket, weather_bucket))
+
             scored.append({
                 "type": "top_bottom", "top": top, "bottom": bottom, "jacket": jacket,
                 "jacket_color_score": jacket_score, "knn_similarity": round(knn_sim, 4),
                 "color_score": color_score, "final_score": round(final_score, 4),
+                "off_season": top["off_season"] or bottom["off_season"]
+                    or (jacket["off_season"] if jacket is not None else False),
             })
 
     for dress in get_dresses(filtered):
-        jacket, jacket_score = find_best_jacket([dress["dominant_colors"]], jackets, style=style_preference, seed_key=(dress["id"],))
+        jacket, jacket_score = find_best_jacket([dress["dominant_colors"]], jackets, weather_bucket, style=style_preference, seed_key=(dress["id"],))
         dress_final_score = 1.0
-        if has_fallback_item(dress):
-            dress_final_score -= SEASON_FALLBACK_PENALTY
+        dress_final_score -= season_penalty(dress, weather_bucket)
+        if jacket is not None:
+            dress_final_score -= season_penalty(jacket, weather_bucket)
+
+        # NEW — stamp off_season on the dress (and jacket) themselves, same as
+        # top/bottom above, so the per-piece badge works for dress outfits too.
+        dress = dict(dress, off_season=is_off_season(dress, weather_bucket))
+        if jacket is not None:
+            jacket = dict(jacket, off_season=is_off_season(jacket, weather_bucket))
+
         scored.append({
             "type": "dress", "top": None, "bottom": dress, "jacket": jacket,
             "jacket_color_score": jacket_score, "knn_similarity": None,
             "color_score": None, "final_score": dress_final_score,
+            "off_season": dress["off_season"] or (jacket["off_season"] if jacket is not None else False),
         })
-
     return scored
-
 
 def outfit_combo(r):
     """Identity tuple for an outfit — used to dedupe across the true-season
@@ -211,6 +218,7 @@ def get_recommendations(wardrobe, temp_c, intent, top_k=3, knn_pool_size=5,
     """
     outerwear_pool = filter_by_weather_only(wardrobe, temp_c)
     jackets = get_outerwear(outerwear_pool)
+    bucket = get_weather_bucket(temp_c) 
     if intent == "Formal":
         jackets = [j for j in jackets if j["category"] == "Blazer"]
     else:  # Casual, Picnic, Travel
@@ -225,7 +233,7 @@ def get_recommendations(wardrobe, temp_c, intent, top_k=3, knn_pool_size=5,
     # Pass 1 — TRUE seasonal items only, no fallback. This is what gets
     # shown whenever the wardrobe can support it.
     filtered_true = filter_wardrobe(wardrobe, temp_c, intent)
-    scored_true = score_candidates(filtered_true, jackets, style_preference, knn_pool_size)
+    scored_true = score_candidates(filtered_true, jackets, style_preference, knn_pool_size, bucket)
     scored_true.sort(key=lambda x: x["final_score"], reverse=True)
     diverse = diversify(scored_true, pool_size, max_repeats_per_item)
 
@@ -235,7 +243,7 @@ def get_recommendations(wardrobe, temp_c, intent, top_k=3, knn_pool_size=5,
     # always come first; fallback outfits only fill remaining slots.
     if len(diverse) < MIN_TRUE_SEASON_OUTFITS:
         filtered_fallback = filter_wardrobe_with_fallback(wardrobe, temp_c, intent)
-        scored_fallback = score_candidates(filtered_fallback, jackets, style_preference, knn_pool_size)
+        scored_fallback = score_candidates(filtered_fallback, jackets, style_preference, knn_pool_size, bucket)
         scored_fallback.sort(key=lambda x: x["final_score"], reverse=True)
 
         already_included = {outfit_combo(r) for r in diverse}

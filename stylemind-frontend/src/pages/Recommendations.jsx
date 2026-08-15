@@ -64,9 +64,10 @@ export default function Recommendations({ user, onLogout }) {
   const recommendation = recommendations[selectedIndex] || null;
   // true if this outfit had to reach into an off-season item via the
   // backend's season_fallback flag (src/recommend/filtering.py).
+  // detail view banner
   const recommendationHasFallback = recommendation
-    ? [recommendation.top, recommendation.bottom, recommendation.jacket].some((p) => p?.season_fallback)
-    : false;
+  ? [recommendation.top, recommendation.bottom, recommendation.jacket].some((p) => p?.season_fallback || p?.off_season)
+  : false;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -345,7 +346,8 @@ export default function Recommendations({ user, onLogout }) {
                 </div>
                 <div className="flex gap-3 mb-3 overflow-x-auto pb-1">
                 {recommendations.slice(0, visibleCount).map((rec, i) => {
-                  const hasFallback = [rec.top, rec.bottom, rec.jacket].some((p) => p?.season_fallback);
+                  // card thumbnail badge
+                  const hasFallback = [rec.top, rec.bottom, rec.jacket].some((p) => p?.season_fallback || p?.off_season);
                   return (
                     <button
                       key={i}
@@ -425,7 +427,8 @@ export default function Recommendations({ user, onLogout }) {
                           </div>
                           <div className="text-xs text-graytext">{piece.texture} • {piece.season}</div>
                         </div>
-                        {piece.season_fallback && (
+                        
+                        {(piece.season_fallback || piece.off_season) && (
                           <span className="absolute top-2 right-2 bg-amber-100 text-amber-700 text-[9px] font-medium px-1.5 py-0.5 rounded-full">
                             off-season
                           </span>
