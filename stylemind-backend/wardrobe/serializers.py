@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Profile, WardrobeItem, Outfit
+from .models import Profile, TryOnResult, WardrobeItem, Outfit
 from .models import ChatSession
 from django.db.models import Q
 
@@ -57,23 +57,24 @@ class ProfileSerializer(serializers.Serializer):
 
 
 class WardrobeItemSerializer(serializers.ModelSerializer):
+    # ===================== CHANGE START =====================
+    # NEW — real count of how many saved outfits include this item as
+    # top, bottom, OR jacket. Replaces the old localStorage-only counter
+    # in the frontend (lib/localData.js), which was never connected to
+    # the real /api/outfits/ endpoint and so never actually incremented.
+    # SerializerMethodField is automatically included even with
+    # fields = "__all__" below, since DRF includes all declared fields
+    # on top of the model's own fields in that mode.
     selection_count = serializers.SerializerMethodField()
-    # NEW — nested detail of the existing item this one's photo matches,
-    # so the frontend can show its real category, not just an id
-    possible_duplicate_of_detail = serializers.SerializerMethodField()
 
     def get_selection_count(self, obj):
         return Outfit.objects.filter(Q(top=obj) | Q(bottom=obj) | Q(jacket=obj)).count()
-
-    def get_possible_duplicate_of_detail(self, obj):
-        if obj.possible_duplicate_of:
-            return WardrobeItemSerializer(obj.possible_duplicate_of).data
-        return None
+    # ===================== CHANGE END =====================
 
     class Meta:
         model = WardrobeItem
         fields = "__all__"
-        read_only_fields = ["owner"]
+        read_only_fields = ["owner"]  # frontend can't set/change who owns an item
 
 # ===================== CHANGE START =====================
 # New: serializes a saved Outfit. Includes both the raw IDs (top/bottom/
@@ -103,3 +104,8 @@ class ChatSessionSerializer(serializers.ModelSerializer):
         model = ChatSession
         fields = ["id", "title", "created_at", "updated_at"]
 # ===================== CHANGE END =====================
+
+class TryOnResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TryOnResult
+        fields = ["id", "status", "result_image", "error_message", "created_at"]

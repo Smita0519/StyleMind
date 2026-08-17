@@ -1,5 +1,6 @@
 // pages/Recommendations.jsx
 import { useState, useEffect } from "react"; // useEffect ADDED — needed for the localStorage sync below
+import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import Navbar from "../components/Navbar";
 import FooterMini from "../components/FooterMini";
@@ -34,6 +35,7 @@ function loadSaved() {
 // ===================== CHANGE END =====================
 
 export default function Recommendations({ user, onLogout }) {
+  const navigate = useNavigate();
   const saved0 = loadSaved(); // read once per mount, used only to seed initial state below
 
   // Each of these restores from localStorage (via saved0) instead of
@@ -440,7 +442,13 @@ export default function Recommendations({ user, onLogout }) {
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button
-                    onClick={() => alert("Try on Avatar. Connects to Member B’s 3D avatar once ready.")}
+                    onClick={() =>
+                      navigate("/avatar", {
+                        state: {
+                          outfitItems: [recommendation.top, recommendation.bottom, recommendation.jacket].filter(Boolean),
+                        },
+                      })
+                    }
                     className="flex-1 py-3 rounded-xl bg-ink text-white text-sm font-medium"
                   >
                     Try on Avatar

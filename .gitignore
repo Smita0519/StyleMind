@@ -29,3 +29,22 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend build artifacts
+node_modules/
+dist/
+build/
+
+# Vite
+.vite/
+
+# Editor
+.vscode/
+.idea/
+
+# Django static files (if you run collectstatic)
+staticfiles/
+
+# Env variants
+.env.local
+.env.*.local

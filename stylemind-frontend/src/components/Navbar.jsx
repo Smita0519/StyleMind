@@ -11,7 +11,7 @@ const links = [
   { to: "/home", label: "Home" },
   { to: "/wardrobe", label: "Wardrobe" },
   { to: "/outfits", label: "Outfits" },
-  { to: "/avatar", label: "Avatar" },
+  { to: "/avatar", label: "Tryon" },,
   { to: "/recommendations", label: "Recommendations" },
   { to: "/chat", label: "Chatbot" },
 ];

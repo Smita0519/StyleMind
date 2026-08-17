@@ -44,7 +44,6 @@ class WardrobeItem(models.Model):
     # default=False means every existing item starts as "not favorited".
     favorite = models.BooleanField(default=False)
 
-    # ===================== CHANGE START =====================
     # NEW — "duplicate_review" is a third state: this item's photo exactly
     # matches one already in the wardrobe, so it's held for the user to
     # confirm keep/discard instead of silently becoming "done".
@@ -63,7 +62,6 @@ class WardrobeItem(models.Model):
     # Points at the existing item this one's photo matches, once flagged.
     # on_delete=SET_NULL so deleting the original doesn't cascade-delete this one.
     possible_duplicate_of = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
-    # ===================== CHANGE END =====================
 
     uploaded_at = models.DateTimeField(auto_now_add=True)  # auto-set when the row is created
 
@@ -108,7 +106,6 @@ class Outfit(models.Model):
 class ChatSession(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_sessions")
     title = models.CharField(max_length=100, blank=True)
-    # ===================== CHANGE START =====================
     # NEW — lets the chatbot remember "which occasion am I currently
     # recommending for" and "how far into the ranked list have I already
     # gone", so a follow-up like "I don't want this, suggest something
@@ -116,8 +113,7 @@ class ChatSession(models.Model):
     # engine, instead of Gemini inventing a substitute on its own.
     last_intent = models.CharField(max_length=20, blank=True)
     last_outfit_index = models.IntegerField(default=0)
-    last_temp_c = models.FloatField(null=True, blank=True)
-    last_style_preference = models.CharField(max_length=20, blank=True)  # NEW — so "safe"/"bold" persists across a conversation the same way intent/temperature already do
+    last_temp_c = models.FloatField(null=True, blank=True)  # NEW — so a temperature-less follow-up ("something else") can still fall back to what was already established
     # ===================== CHANGE END =====================
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -156,3 +152,24 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.role}: {self.text[:40]}"
+
+
+# Tracks one virtual try-on request: the photo the user uploaded, which
+# wardrobe item(s) to put on them, and the generated result. Same
+# processing/done/failed pattern as WardrobeItem, since generation takes
+# a while and runs in a background thread.
+class TryOnResult(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tryon_results")
+    person_photo = models.ImageField(upload_to="tryon/person/")
+    top = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    bottom = models.ForeignKey(WardrobeItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    result_image = models.ImageField(upload_to="tryon/results/", null=True, blank=True)
+
+    STATUS_CHOICES = [("processing", "Processing"), ("done", "Done"), ("failed", "Failed")]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="processing")
+    error_message = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"TryOn {self.id} ({self.owner.username}) - {self.status}"

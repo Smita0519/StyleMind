@@ -9,11 +9,14 @@ urlpatterns = [
     path("me/", views.me, name="me"),
     path("wardrobe/<int:item_id>/", views.delete_item, name="delete_item"),
     path("wardrobe/<int:item_id>/favorite/", views.toggle_favorite, name="toggle_favorite"),
-    path("wardrobe/<int:item_id>/resolve-duplicate/", views.resolve_duplicate, name="resolve_duplicate"),
     path("outfits/", views.outfits, name="outfits"),
     path("outfits/<int:outfit_id>/", views.delete_outfit, name="delete_outfit"),
     path("health/", views.health, name="health"),
     path("chat/sessions/", views.chat_sessions, name="chat_sessions"),
     path("chat/sessions/<int:session_id>/", views.chat_session_detail, name="chat_session_detail"),
     path("chat/", views.chat, name="chat"),
+    # ===================== CHANGE START =====================
+    path("tryon/", views.start_tryon, name="start_tryon"),
+    path("tryon/<int:tryon_id>/", views.tryon_status, name="tryon_status"),
+    # ===================== CHANGE END =====================
 ]
