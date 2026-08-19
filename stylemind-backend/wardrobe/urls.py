@@ -17,6 +17,7 @@ urlpatterns = [
     path("chat/", views.chat, name="chat"),
     # ===================== CHANGE START =====================
     path("tryon/", views.start_tryon, name="start_tryon"),
+    path("tryon/<int:tryon_id>/cancel/", views.cancel_tryon, name="cancel_tryon"),
     path("tryon/<int:tryon_id>/", views.tryon_status, name="tryon_status"),
     # ===================== CHANGE END =====================
 ]

@@ -42,10 +42,10 @@ export default function ChatBubble({ role, text, segments, timestamp }) {
                   real wardrobe items, so it doesn't appear on plain chat */}
               {itemsInMessage.length > 0 && (
                 <button
-                  onClick={() => navigate("/avatar", { state: { outfitItems: itemsInMessage } })}
+                  onClick={() => navigate("/tryon", { state: { outfitItems: itemsInMessage } })}
                   className="mt-3 text-xs font-medium text-white bg-ink px-3 py-1.5 rounded-full hover:opacity-90 transition"
                 >
-                  Try this on Avatar →
+                  TryOn →
                 </button>
               )}
             </div>

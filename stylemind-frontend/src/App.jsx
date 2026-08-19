@@ -9,7 +9,7 @@ import Wardrobe from "./pages/Wardrobe";
 import Chatbot from "./pages/Chatbot";
 import FloatingChatbot from "./components/FloatingChatbot";
 import Recommendations from "./pages/Recommendations";
-import Avatar from "./pages/Avatar";
+import TryOn from "./pages/TryOn";
 import Outfits from "./pages/Outfits";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 
@@ -68,7 +68,7 @@ function handleLogout() {
         <Route path="/wardrobe" element={<ProtectedLayout user={user}><Wardrobe user={user} onLogout={handleLogout} /></ProtectedLayout>} />
         <Route path="/chat" element={<ProtectedLayout user={user} showFloatingChat={false}><Chatbot user={user} onLogout={handleLogout} /></ProtectedLayout>} />
         <Route path="/outfits" element={<ProtectedLayout user={user}><Outfits user={user} onLogout={handleLogout} /></ProtectedLayout>} />
-        <Route path="/avatar" element={<ProtectedLayout user={user}><Avatar user={user} onLogout={handleLogout} /></ProtectedLayout>} />
+        <Route path="/tryon" element={<ProtectedLayout user={user}><TryOn user={user} onLogout={handleLogout} /></ProtectedLayout>} />
         <Route path="/recommendations" element={<ProtectedLayout user={user}><Recommendations user={user} onLogout={handleLogout} /></ProtectedLayout>} />
 
         {/* Any unknown URL → send to login */}

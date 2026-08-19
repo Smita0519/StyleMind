@@ -438,3 +438,11 @@ export async function getTryOnStatus(tryonId) {
   const data = await res.json();
   return { ...data, resultImageUrl: data.result_image ? `${BACKEND}${data.result_image}` : null };
 }
+
+export async function cancelTryOn(tryonId) {
+  const res = await fetch(`${BACKEND}/api/tryon/${tryonId}/cancel/`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to cancel");
+}

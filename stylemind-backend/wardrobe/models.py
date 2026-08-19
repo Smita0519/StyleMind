@@ -44,6 +44,7 @@ class WardrobeItem(models.Model):
     # default=False means every existing item starts as "not favorited".
     favorite = models.BooleanField(default=False)
 
+    # ===================== CHANGE START =====================
     # NEW — "duplicate_review" is a third state: this item's photo exactly
     # matches one already in the wardrobe, so it's held for the user to
     # confirm keep/discard instead of silently becoming "done".
@@ -62,6 +63,7 @@ class WardrobeItem(models.Model):
     # Points at the existing item this one's photo matches, once flagged.
     # on_delete=SET_NULL so deleting the original doesn't cascade-delete this one.
     possible_duplicate_of = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    # ===================== CHANGE END =====================
 
     uploaded_at = models.DateTimeField(auto_now_add=True)  # auto-set when the row is created
 
@@ -113,8 +115,15 @@ class ChatSession(models.Model):
     # engine, instead of Gemini inventing a substitute on its own.
     last_intent = models.CharField(max_length=20, blank=True)
     last_outfit_index = models.IntegerField(default=0)
-    last_temp_c = models.FloatField(null=True, blank=True)  # NEW — so a temperature-less follow-up ("something else") can still fall back to what was already established
-    # ===================== CHANGE END =====================
+    last_temp_c = models.FloatField(null=True, blank=True)  # so a temperature-less follow-up ("something else") can still fall back to what was already established
+    last_style_preference = models.CharField(max_length=20, blank=True)  # NEW — so "safe"/"bold" persists across a conversation the same way intent/temperature already do
+    # NEW — the FROZEN, ranked list of outfits from the last real
+    # recommendation-engine call (item ids + score + off_season only,
+    # not full item data). Every follow-up like "something else" reads
+    # further into THIS exact list instead of calling the engine again —
+    # that's what guarantees strict A → B → C → D order, since nothing
+    # ever gets recomputed or re-sorted mid-conversation.
+    last_recommendation_list = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -153,8 +162,7 @@ class ChatMessage(models.Model):
     def __str__(self):
         return f"{self.role}: {self.text[:40]}"
 
-
-# Tracks one virtual try-on request: the photo the user uploaded, which
+    # Tracks one virtual try-on request: the photo the user uploaded, which
 # wardrobe item(s) to put on them, and the generated result. Same
 # processing/done/failed pattern as WardrobeItem, since generation takes
 # a while and runs in a background thread.

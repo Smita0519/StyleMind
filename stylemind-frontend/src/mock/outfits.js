@@ -107,8 +107,3 @@ export const savedOutfits = [
   { id: "o6", name: "Casual Weekend", occasion: "Casual", pieces: 3, bg: "#E8EDE0" },
 ];
 
-// Avatar customization options — unrelated to this ML update, unchanged.
-export const bodyTypes = ["Slim", "Athletic", "Curvy", "Plus"];
-export const skinTones = ["#F4D2B8", "#E8B48A", "#C68863", "#8D5A3C", "#5C3A28"];
-export const hairStyles = ["Straight", "Wavy", "Curly", "Bun", "Ponytail"];
-export const hairColors = ["#1A1A1A", "#4A2E1E", "#8B5A2B", "#C9A24B", "#D9D9D9"];

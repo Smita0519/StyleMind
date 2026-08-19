@@ -49,7 +49,7 @@ const trending = [
 const quickActions = [
   { icon: Upload, label: "Upload Clothes", sub: "Add to wardrobe", to: "/wardrobe" },
   { icon: Shirt, label: "Create Outfit", sub: "Mix & match", to: "/recommendations" },
-  { icon: User, label: "Virtual Try-On", sub: "See it on you", to: "/avatar" },
+  { icon: User, label: "Virtual Try-On", sub: "See it on model", to: "/tryon" },
   { icon: MessageCircle, label: "Chat with Stylist", sub: "Get AI advice", to: "/chat" },
 ];
 

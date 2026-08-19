@@ -1353,3 +1353,17 @@ def tryon_status(
             tryon
         ).data
     )
+
+# POST /api/tryon/<id>/cancel/ — marks a try-on as cancelled. Can't force-kill
+# the background thread mid-network-call (Python doesn't support that
+# safely), but marking it "failed" here means: (a) the frontend stops
+# polling it immediately, and (b) even if the thread eventually finishes,
+# nothing will ever display that result — it's already discarded.
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def cancel_tryon(request, tryon_id):
+    result = get_object_or_404(TryOnResult, id=tryon_id, owner=request.user)
+    result.status = "failed"
+    result.error_message = "Cancelled by user"
+    result.save(update_fields=["status", "error_message"])
+    return Response(status=204)

@@ -443,7 +443,7 @@ export default function Recommendations({ user, onLogout }) {
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button
                     onClick={() =>
-                      navigate("/avatar", {
+                      navigate("/tryon", {
                         state: {
                           outfitItems: [recommendation.top, recommendation.bottom, recommendation.jacket].filter(Boolean),
                         },
@@ -451,7 +451,7 @@ export default function Recommendations({ user, onLogout }) {
                     }
                     className="flex-1 py-3 rounded-xl bg-ink text-white text-sm font-medium"
                   >
-                    Try on Avatar
+                    TryOn
                   </button>
                   <button
                     onClick={handleSaveOutfit}

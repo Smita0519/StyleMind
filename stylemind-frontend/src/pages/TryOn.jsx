@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import {
+import { useState, useEffect, useRef } from "react";import {
   User,
   Heart,
   RotateCcw,
@@ -15,12 +14,7 @@ import {
 import Navbar from "../components/Navbar";
 import FooterMini from "../components/FooterMini";
 import { useLocation } from "react-router-dom";
-
-import {
-  startTryOn,
-  getTryOnStatus,
-  getWardrobe,
-} from "../lib/api";
+import { startTryOn, getTryOnStatus, getWardrobe, getServerStartedAt, cancelTryOn } from "../lib/api";
 
 import genericModelShorts from "../assets/generic-model.png";
 import genericModelPant from "../assets/generic-model-pant.png";
@@ -53,6 +47,38 @@ const MODEL_OPTIONS = [
     image: genericModelLongSkirt,
   },
 ];
+
+// ===================== CHANGE START =====================
+// NEW — lets an in-progress (or just-completed) try-on survive navigating
+// to another page and back, since the actual generation happens in a
+// background thread on the server regardless of whether this component
+// is mounted. Cleared only when the user explicitly starts a new try-on,
+// resets, or the backend has genuinely restarted since (detected via
+// getServerStartedAt(), same mechanism as Recommendations.jsx).
+const TRYON_STORAGE_KEY = "stylemind_active_tryon";
+
+// ===================== CHANGE START =====================
+// CHANGED — now also stores WHICH items were selected, not just the
+// tryon job id. Without this, remounting after navigating away restored
+// the generation STATUS correctly but showed a blank selection, making
+// the page look reset even though the job was still genuinely running.
+function saveActiveTryon(tryonId, serverStartedAt, selection, modelId) {
+  try {
+    localStorage.setItem(TRYON_STORAGE_KEY, JSON.stringify({ tryonId, serverStartedAt, selection, modelId }));
+  } catch {}
+}
+// ===================== CHANGE END =====================
+function clearActiveTryon() {
+  try { localStorage.removeItem(TRYON_STORAGE_KEY); } catch {}
+}
+function loadActiveTryon() {
+  try {
+    return JSON.parse(localStorage.getItem(TRYON_STORAGE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+// ===================== CHANGE END =====================
 
 /* =========================================================
    WARDROBE CATEGORIES
@@ -250,7 +276,7 @@ function WardrobeRow({
    MAIN COMPONENT
 ========================================================= */
 
-export default function Avatar({ user, onLogout }) {
+export default function TryOn({ user, onLogout }) {
   const location = useLocation();
 
   const outfitFromChat =
@@ -342,6 +368,17 @@ export default function Avatar({ user, onLogout }) {
   const [error, setError] =
     useState(null);
 
+  const [activeTryonId, setActiveTryonId] = 
+    useState(null); // NEW — needed so Cancel knows which job to cancel
+  
+  const [submittedItems, setSubmittedItems] = 
+    useState([]); // NEW — frozen snapshot of what's actually being generated, so changing your selection mid-generation doesn't change what this shows
+
+  // NEW — tracks the active polling interval so it can be properly
+  // cleared (both on completion and on unmount), instead of the old
+  // raw setInterval that just kept ticking uselessly after navigating away
+  const pollIntervalRef = useRef(null);
+
   /* -------------------------------------------------------
      SAVED LOOKS (outfit combinations, no photo)
   ------------------------------------------------------- */
@@ -375,7 +412,7 @@ export default function Avatar({ user, onLogout }) {
   /* -------------------------------------------------------
      EDIT SAVED LOOK MODAL
   ------------------------------------------------------- */
-
+  const [viewingPhoto, setViewingPhoto] = useState(null); // NEW — which saved photo (if any) is open in the lightbox
   const [editingLookId, setEditingLookId] = useState(null);
   const editingLook = savedLooks.find((l) => l.id === editingLookId) || null;
 
@@ -389,6 +426,85 @@ export default function Avatar({ user, onLogout }) {
       .catch((e) => setWardrobeError(e.message))
       .finally(() => setWardrobeLoading(false));
   }, []);
+
+  // NEW — on mount, checks for a try-on that was already in progress (or
+  // just finished) before the user navigated away, and resumes/restores
+  // it instead of starting blank.
+  useEffect(() => {
+    const active = loadActiveTryon();
+    if (!active) return;
+
+    // ===================== CHANGE START =====================
+    // NEW — arriving here via "Try on Avatar" from Recommendations/Chatbot
+    // (outfitFromChat is set) means the user explicitly wants to try a
+    // DIFFERENT combination right now — don't resume an old, unrelated
+    // in-progress job over it.
+    if (outfitFromChat) {
+      clearActiveTryon();
+      return;
+    }
+    // ===================== CHANGE END =====================
+
+    (async () => {
+      try {
+        const currentServerStartedAt = await getServerStartedAt();
+        if (currentServerStartedAt !== active.serverStartedAt) {
+          clearActiveTryon();
+          return;
+        }
+
+        // ===================== CHANGE START =====================
+        // NEW — restore the actual selected items (not just the status)
+        // once the real wardrobe has loaded, so the selection UI doesn't
+        // look blank/reset while the job is still genuinely processing
+                if (active.selection && wardrobe.length > 0) {
+          const findById = (id) => wardrobe.find((w) => w.id === id) || null;
+          if (active.selection.topId) setSelectedTop(findById(active.selection.topId));
+          if (active.selection.bottomId) setSelectedBottom(findById(active.selection.bottomId));
+          if (active.selection.jacketId) setSelectedJacket(findById(active.selection.jacketId));
+          if (active.selection.skirtId) setSelectedSkirt(findById(active.selection.skirtId));
+          if (active.selection.dressId) setSelectedDress(findById(active.selection.dressId));
+        }
+
+        // ===================== CHANGE START =====================
+        // NEW — THE actual fix: restores which model photo was selected,
+        // so photoFile/photoPreview aren't null after remounting. Without
+        // this, the "Generating…" button never rendered at all (it's
+        // gated on photoFile existing), making a still-running job look
+        // like it had silently stopped.
+        if (active.modelId) {
+          const model = MODEL_OPTIONS.find((m) => m.id === active.modelId);
+          if (model) {
+            setSelectedModelId(model.id);
+            setPhotoPreview(model.image);
+            try {
+              const res = await fetch(model.image);
+              const blob = await res.blob();
+              const file = new File([blob], `${model.id}-model.jpg`, { type: blob.type || "image/jpeg" });
+              setPhotoFile(file);
+            } catch {
+              // non-fatal — status/result restoration below still proceeds either way
+            }
+          }
+        }
+        // ===================== CHANGE END =====================
+
+        const data = await getTryOnStatus(active.tryonId);
+        if (data.status === "done") {
+          setTryonStatus("done");
+          setResultUrl(data.resultImageUrl);
+        } else if (data.status === "failed") {
+          setTryonStatus("failed");
+          setError(data.error_message || "Generation failed — try again.");
+        } else {
+          setTryonStatus("processing");
+          pollUntilDone(active.tryonId);
+        }
+      } catch {
+        clearActiveTryon();
+      }
+    })();
+  }, [wardrobe]); {/* CHANGED — dependency array was [], now depends on wardrobe so the id-lookup above has real data to search once it loads */}
 
   /* =======================================================
      PERSIST SAVED LOOKS
@@ -417,10 +533,18 @@ export default function Avatar({ user, onLogout }) {
   ======================================================= */
 
   async function handleSelectModel(option) {
+    // ===================== CHANGE START =====================
+    // NEW — refuse to change the model while a generation is actively
+    // processing. The job in progress is already locked to whatever was
+    // submitted (frozen in submittedItems) — switching models here doesn't
+    // affect that job at all, it just corrupts the UI by clearing
+    // tryonStatus out from under an in-progress poll.
+    if (tryonStatus === "processing") return;
+    // ===================== CHANGE END =====================
+
     setError(null);
     setResultUrl(null);
     setTryonStatus(null);
-
     setSelectedModelId(option.id);
     setPhotoPreview(option.image);
 
@@ -542,9 +666,10 @@ export default function Avatar({ user, onLogout }) {
     setPhotoFile(null);
     setPhotoPreview(null);
 
-    setResultUrl(null);
+   setResultUrl(null);
     setTryonStatus(null);
     setError(null);
+    clearActiveTryon(); // NEW
   }
 
   /* =======================================================
@@ -649,7 +774,7 @@ export default function Avatar({ user, onLogout }) {
      with the new state) as well as from the manual button.
   ======================================================= */
 
-  async function runGenerate(photoFileArg, topId, bottomId) {
+    async function runGenerate(photoFileArg, topId, bottomId, selection, modelId, itemsForDisplay) {
     if (!photoFileArg) {
       setError("Choose a model first.");
       return;
@@ -662,6 +787,7 @@ export default function Avatar({ user, onLogout }) {
     setError(null);
     setTryonStatus("processing");
     setResultUrl(null);
+    setSubmittedItems(itemsForDisplay || []); // NEW — freezes the thumbnail strip to what's actually being generated
 
     try {
       const started = await startTryOn({
@@ -669,10 +795,23 @@ export default function Avatar({ user, onLogout }) {
         topId,
         bottomId,
       });
+      setActiveTryonId(started.id); // NEW
+      // NEW — persists this try-on so it survives navigating away. Also
+      // captures the server's current boot timestamp, so a later resume
+      // can tell whether the backend has restarted since (in which case
+      // the background thread is dead and shouldn't be "resumed")
+      try {
+                const startedAt = await getServerStartedAt();
+        saveActiveTryon(started.id, startedAt, selection, modelId); // CHANGED — also pass which model, so it can be restored on resume
+      } catch {
+        // health check failed — still poll normally in this tab, it just
+        // won't be resumable after a page refresh
+      }
       pollUntilDone(started.id);
     } catch (e) {
       setError(e.message);
       setTryonStatus("failed");
+      clearActiveTryon();
     }
   }
 
@@ -685,7 +824,16 @@ export default function Avatar({ user, onLogout }) {
   async function handleGenerate() {
     const topId = selectedDress ? undefined : selectedTop?.id;
     const bottomId = selectedDress?.id || selectedBottom?.id || selectedSkirt?.id;
-    await runGenerate(photoFile, topId, bottomId);
+    // ===================== CHANGE START =====================
+    // NEW — captures the FULL selection (including jacket, which never
+    // goes to the try-on API itself but still needs to display correctly
+    // if the user navigates away and back)
+    const selection = {
+      topId: selectedTop?.id, bottomId: selectedBottom?.id, jacketId: selectedJacket?.id,
+      skirtId: selectedSkirt?.id, dressId: selectedDress?.id,
+    };
+    const itemsForDisplay = [selectedTop, selectedBottom, selectedJacket, selectedSkirt, selectedDress].filter(Boolean);
+    await runGenerate(photoFile, topId, bottomId, selection, selectedModelId, itemsForDisplay);
   }
 
   /* =======================================================
@@ -727,7 +875,31 @@ export default function Avatar({ user, onLogout }) {
 
     const topId = look.dress ? undefined : look.top?.id;
     const bottomId = look.dress?.id || look.bottom?.id || look.skirt?.id;
-    await runGenerate(file, topId, bottomId);
+    // CHANGED — pass the look's own items as the selection to persist
+    const selection = {
+      topId: look.top?.id, bottomId: look.bottom?.id, jacketId: look.jacket?.id,
+      skirtId: look.skirt?.id, dressId: look.dress?.id,
+    };
+    const itemsForDisplay = [look.top, look.bottom, look.jacket, look.skirt, look.dress].filter(Boolean);
+    await runGenerate(file, topId, bottomId, selection, model.id, itemsForDisplay);
+  }
+
+async function handleCancel() {
+    const idToCancel = activeTryonId;
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    pollIntervalRef.current = null;
+    setTryonStatus(null);
+    setResultUrl(null);
+    setSubmittedItems([]);
+    clearActiveTryon();
+    if (idToCancel) {
+      try {
+        await cancelTryOn(idToCancel);
+      } catch {
+        // even if the cancel request itself fails, the UI has already
+        // moved on and won't be tracking/showing this job anymore
+      }
+    }
   }
 
   /* =======================================================
@@ -735,45 +907,44 @@ export default function Avatar({ user, onLogout }) {
   ======================================================= */
 
   function pollUntilDone(tryonId) {
-    const interval =
-      setInterval(async () => {
-        try {
-          const data =
-            await getTryOnStatus(
-              tryonId
-            );
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current); // guard against a duplicate poll ever running at once
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const data = await getTryOnStatus(tryonId);
 
-          if (data.status === "done") {
-            clearInterval(interval);
-
-            setTryonStatus("done");
-
-            setResultUrl(
-              data.resultImageUrl
-            );
-          } else if (
-            data.status === "failed"
-          ) {
-            clearInterval(interval);
-
-            setTryonStatus("failed");
-
-            setError(
-              data.error_message ||
-                "Generation failed — try again."
-            );
-          }
-        } catch {
-          clearInterval(interval);
-
+        if (data.status === "done") {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+          setTryonStatus("done");
+          setResultUrl(data.resultImageUrl);
+          // NOT cleared from localStorage here on purpose — the result
+          // should still show if the user navigates away and comes back;
+          // only an explicit reset/new-generation clears it (see below)
+        } else if (data.status === "failed") {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
           setTryonStatus("failed");
-
-          setError(
-            "Lost connection while checking try-on status."
-          );
+          setError(data.error_message || "Generation failed — try again.");
         }
-      }, 4000);
+      } catch {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+        setTryonStatus("failed");
+        setError("Lost connection while checking try-on status.");
+      }
+    }, 4000);
   }
+
+  // NEW — stops the polling interval if the user navigates away
+  // mid-generation, so it doesn't keep running uselessly in the
+  // background of this specific tab's memory (the actual server-side
+  // generation is unaffected either way — this only stops THIS tab from
+  // continuing to check on it while unmounted)
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, []);
 
   /* =======================================================
      RESET RESULT
@@ -783,6 +954,7 @@ export default function Avatar({ user, onLogout }) {
     setResultUrl(null);
     setTryonStatus(null);
     setError(null);
+    clearActiveTryon(); // NEW — "try a different combination" is an explicit fresh start
   }
 
   /* =======================================================
@@ -862,7 +1034,12 @@ export default function Avatar({ user, onLogout }) {
               PAGE GRID
           ================================================= */}
 
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(430px,0.95fr)_125px] gap-5">
+          {/* CHANGED — added items-start. CSS Grid stretches every column in a
+              row to match the TALLEST one by default (align-items: stretch) — that's
+              exactly why "Choose Model" and "Personal Styling" were growing to match
+              a taller sibling column with empty space at the bottom. items-start
+              makes each column only as tall as its own content. */}
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(430px,0.95fr)_125px] gap-5 items-start">
 
             {/* =================================================
                 LEFT — PERSONAL STYLING
@@ -973,7 +1150,7 @@ export default function Avatar({ user, onLogout }) {
                 CENTER — MODEL PREVIEW
             ================================================= */}
 
-            <section className="rounded-2xl border border-[#EAEAEA] bg-gradient-to-b from-[#F8E9DF] to-[#F5E7EA] min-h-[700px] relative overflow-hidden">
+            <section className="rounded-2xl border border-[#EAEAEA] bg-gradient-to-b from-[#F8E9DF] to-[#F5E7EA] min-h-[760px] relative overflow-hidden">
 
               {/* RESULT */}
 
@@ -1002,11 +1179,58 @@ export default function Avatar({ user, onLogout }) {
 
                   <button
                     onClick={resetResult}
-                    className="mt-5 text-sm text-graytext underline"
+                    className="mt-5 mb-8 text-sm text-graytext underline"
                   >
                     Try a different combination
                   </button>
 
+                </div>
+              ) : tryonStatus === "processing" ? (
+                <div className="h-full min-h-[850px] flex items-center justify-center p-8 relative">
+                  {photoPreview && (
+                    <img
+                      src={photoPreview}
+                      alt="Selected model"
+                      className="max-h-[620px] max-w-full object-contain opacity-40"
+                    />
+                  )}
+
+                  <div className="absolute inset-0 flex items-center justify-center px-6">
+                    <div className="bg-white rounded-2xl shadow-lg px-7 py-6 flex flex-col items-center text-center max-w-[300px]">
+                      <div className="w-10 h-10 border-4 border-[#8F1D2C] border-t-transparent rounded-full animate-spin mb-4" />
+                      <p className="text-base text-ink font-semibold">Generating your look…</p>
+                      <p className="text-sm text-graytext mt-2">
+                        This may take a few minutes. Feel free to browse other pages while it continues working in the background.
+                      </p>
+                      {/* NEW — lets the user actually stop this generation, instead of just watching it */}
+                      <button
+                        onClick={handleCancel}
+                        className="mt-4 text-xs text-graytext underline hover:text-red-500 transition"
+                      >
+                        Cancel generation
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CHANGED — uses submittedItems (frozen at generation
+                      start), NOT the live selectedTop/etc, so changing
+                      your selection mid-generation doesn't alter what
+                      this strip shows — it always reflects what's
+                      actually being generated right now. Also moved from
+                      bottom-5 to bottom-14 so it clears the disclaimer bar
+                      at the very bottom of the panel instead of overlapping it. */}
+                  {submittedItems.length > 0 && (
+                    <div className="absolute bottom-14 right-5 bg-white/90 backdrop-blur rounded-xl p-2 shadow-sm flex gap-1.5">
+                      {submittedItems.map((item) => (
+                        <img
+                          key={item.id}
+                          src={getItemImage(item)}
+                          alt={item.category}
+                          className="w-10 h-10 object-contain rounded-lg border border-[#EAEAEA] bg-[#FAF8F5]"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -1029,7 +1253,7 @@ export default function Avatar({ user, onLogout }) {
 
                   {/* MODEL */}
 
-                  <div className="h-full min-h-[700px] flex items-center justify-center p-8">
+                  <div className="h-full min-h-[850px] flex items-center justify-center p-8">
 
                     {photoPreview ? (
                       <img
@@ -1051,7 +1275,7 @@ export default function Avatar({ user, onLogout }) {
 
                   {/* RESET — only control left, undo removed */}
 
-                  <div className="absolute bottom-5 left-5 flex gap-2">
+                  <div className="absolute bottom-14 left-5 flex gap-2">
 
                     <button
                       onClick={handleReset}
@@ -1063,24 +1287,11 @@ export default function Avatar({ user, onLogout }) {
 
                   </div>
 
-                  {/* DISCLAIMER — centered across the preview box,
-                      at the same vertical level as the Generate
-                      Try-On button (its own sibling, not nested in
-                      the right-side column, so left-1/2 centers it
-                      relative to the whole section instead of the
-                      narrow bottom-right stack). */}
-
-                  {photoFile && (
-                    <p className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 max-w-[260px] text-center text-[10px] leading-snug text-graytext/80 bg-white/70 backdrop-blur rounded-lg px-2.5 py-1.5">
-                      Results are AI-generated and may vary slightly from how the item actually looks in wardrobe.
-                    </p>
-                  )}
-
                   {/* OUTFIT PREVIEW + GENERATE — stacked in the
                       bottom-right, so the user can see exactly what
                       they've picked right next to the action button. */}
 
-                  <div className="absolute bottom-5 right-5 flex flex-col items-end gap-2">
+                  <div className="absolute bottom-14 right-5 flex flex-col items-end gap-2">
 
                     {hasSelectedClothing && (
                       <div className="bg-white/90 backdrop-blur rounded-xl p-2 shadow-sm flex gap-1.5">
@@ -1116,6 +1327,18 @@ export default function Avatar({ user, onLogout }) {
                 </>
               )}
 
+              {/* CHANGED — moved out of the "no result" branch, so this
+                  now shows in EVERY state (browsing, processing, and after
+                  the result is generated), not just before generating.
+                  Also redesigned from a small floating pill into a slim
+                  full-width footer bar, which reads more cleanly than a
+                  cramped box sitting in the middle of the preview area. */}
+              <div className="absolute bottom-0 left-0 right-0 bg-white/85 backdrop-blur-sm border-t border-[#EEE0D8] py-2.5 px-4 text-center">
+                <p className="text-[11px] text-graytext">
+                  Results are AI-generated and may vary slightly from how the item actually looks in wardrobe.
+                </p>
+              </div>
+
             </section>
 
             {/* =================================================
@@ -1128,7 +1351,7 @@ export default function Avatar({ user, onLogout }) {
                 Choose Model
               </h3>
 
-              <div className="flex lg:flex-col gap-3">
+              <div className="flex h-[500px] lg:flex-col gap-3">
 
                 {MODEL_OPTIONS.map(
                   (option) => {
@@ -1140,22 +1363,17 @@ export default function Avatar({ user, onLogout }) {
                     return (
                       <button
                         key={option.id}
-                        onClick={() =>
-                          handleSelectModel(
-                            option
-                          )
-                        }
+                        onClick={() => handleSelectModel(option)}
+                        disabled={tryonStatus === "processing"}
                         className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden border-2 bg-[#FAF8F5] transition ${
-                          selected
-                            ? "border-[#8F1D2C] shadow-sm"
-                            : "border-[#EAEAEA] hover:border-[#D9C4A3]"
-                        }`}
+                          selected ? "border-[#8F1D2C] shadow-sm" : "border-[#EAEAEA] hover:border-[#D9C4A3]"
+                        } ${tryonStatus === "processing" ? "opacity-40 cursor-not-allowed" : ""}`}
                       >
 
                         <img
                           src={option.image}
                           alt={option.label}
-                          className="w-full h-full object-cover object-top"
+                          className="w-full h-full object-contain p-2"
                         />
 
                         {selected && (
@@ -1322,13 +1540,17 @@ export default function Avatar({ user, onLogout }) {
                     className="flex-shrink-0 w-36 rounded-xl border border-[#EAEAEA] bg-[#FAF8F5] p-2"
                   >
 
-                    <div className="w-full h-48 rounded-lg bg-white overflow-hidden">
+                    {/* NEW — clicking the thumbnail opens the full-size popup */}
+                    <button
+                      onClick={() => setViewingPhoto(photo)}
+                      className="w-full h-48 rounded-lg bg-white overflow-hidden block"
+                    >
                       <img
                         src={photo.url}
                         alt="Saved try-on"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform"
                       />
-                    </div>
+                    </button>
 
                     <button
                       onClick={() => handleDeleteSavedPhoto(photo.id)}
@@ -1353,7 +1575,28 @@ export default function Avatar({ user, onLogout }) {
       {/* =================================================
           EDIT SAVED LOOK MODAL
       ================================================= */}
-
+      {/* NEW — full-size popup for a saved try-on photo */}
+      {viewingPhoto && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setViewingPhoto(null)}
+        >
+          <div className="relative max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setViewingPhoto(null)}
+              className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center text-graytext hover:text-red-500 transition"
+            >
+              <X size={18} />
+            </button>
+            <img
+              src={viewingPhoto.url}
+              alt="Saved try-on"
+              className="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl bg-white"
+            />
+          </div>
+        </div>
+      )}
+      
       {editingLook && (
         <div
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
@@ -1380,7 +1623,7 @@ export default function Avatar({ user, onLogout }) {
                   return (
                     <div
                       key={key}
-                      className="relative rounded-xl border border-[#EAEAEA] bg-[#FAF8F5] p-2"
+                      className="relative rounded-xl border border-[#EAEAEA] bg-[#FAF8F5] p-9"
                     >
                       <button
                         onClick={() =>
