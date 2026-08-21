@@ -1,6 +1,7 @@
 # wardrobe/chatbot.py
 import os
 import re
+import random 
 from google import genai
 from .models import WardrobeItem, Outfit, ChatMessage
 from src.recommend.recommend import get_recommendations
@@ -29,10 +30,8 @@ When you mention a SPECIFIC item from the wardrobe list by name, write it inline
 - You MUST use the exact item ids given in "Suggested outfit match" — never substitute a different id you think might fit better, even if it seems like a more interesting or varied choice. The ids are not suggestions for you to reconsider; they are the answer.
 - Reference exactly those items via their ids, and explain why this particular combination works (colors, weather, occasion).
 - Present it as your one recommendation, not as "an option" or "one idea" — never frame it as though there are other choices to browse, and never list a second combination alongside it, even if other wardrobe items would also seem to fit.
-- If the user asks for another option, a different look, or something bolder/safer, explain that you're showing their current top pick and they can generate more choices on the Recommendations page — don't invent a second combination yourself.
-- If "Suggested outfit match" starts with "NONE FOUND", no valid combination exists in the wardrobe at all for this occasion/weather — say so honestly, in your own words.
-- If it starts with "EXHAUSTED", every outfit in the engine's ranked list for this occasion/weather has already been shown across this conversation. Tell the user clearly and warmly that there are no more suitable ranked options left — do NOT repeat an earlier outfit and do NOT invent a new one. As an absolute last resort ONLY, you may mention individual items directly from the wardrobe yourself — but you MUST explicitly say these are not the engine's ranked picks.
 - If any piece in "Suggested outfit match" (top, bottom, or jacket) has "off_season": True, or the outfit's own "off_season" field is True, mention this naturally and briefly — e.g. "heads up, this doesn't perfectly match the current season, but it's the best match your wardrobe has right now." Don't hide this, and don't make it sound alarming — just an honest, casual heads-up, the same way the Recommendations page shows an off-season badge.
+- If "Suggested outfit match" includes a "match_percent" value, casually mention it somewhere in your reply (e.g. "a 92% match for this weather") — don't make it the focus, just a natural detail alongside the color/weather reasoning.
 
 Keep responses conversational and concise — this is a chat panel, not an essay."""
 
@@ -154,6 +153,10 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
             temp_c = None
             weather_desc = None
 
+    # FIX: these two lines were previously indented inside the `except ValueError:`
+    # block above, so `detected_intent` was never assigned when resolve_temperature()
+    # succeeded (e.g. location turned on) — causing an UnboundLocalError as soon as
+    # `if detected_intent:` ran below. Now runs unconditionally, in both cases.
     detected_intent = detect_intent(message)
     rejecting = is_rejection(message)
 
@@ -161,12 +164,15 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
     style_preference = detected_style or (session.last_style_preference if session else None) or "safe"
 
     # ===================== CHANGE START =====================
-    # CHANGED — decides not just WHICH position to show, but whether the
-    # engine needs to be called at all. `recompute=True` only for a
-    # genuinely new context (new occasion, meaningfully different
-    # temperature, or an explicit style change) — a plain rejection or a
-    # restated identical context NEVER re-calls the engine; it just reads
-    # further into the already-frozen list from session.last_recommendation_list.
+    # REWRITTEN — no longer steps through the ranked list in strict order
+    # (0, then 1, then 2...). Still calls the SAME get_recommendations()
+    # used by the Recommendations page and freezes the SAME list onto the
+    # session — grounding is unchanged. "Show me another" now picks a
+    # RANDOM entry from that frozen list instead of always advancing by
+    # exactly +1, only avoiding an immediate repeat of whatever was just
+    # shown. No promise of any particular order or of ever running "out"
+    # of options — with 2+ outfits in the list, there's always a valid
+    # different pick.
     intent = None
     temp_for_lookup = temp_c
     outfit_index = 0
@@ -174,23 +180,36 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
 
     if detected_intent:
         intent = detected_intent
+        # Restating the occasion alone should not drop an already-known
+        # temperature — falls back to the session's last one, same as the
+        # other two branches below already did.
+        if temp_for_lookup is None and session:
+            temp_for_lookup = session.last_temp_c
+
         same_context = (
             session and session.last_intent == intent and temp_for_lookup is not None
             and session.last_temp_c is not None and abs(temp_for_lookup - session.last_temp_c) <= 2
             and session.last_style_preference == style_preference
-            and session.last_recommendation_list  # only "continue" if there's actually something frozen to continue from
+            and session.last_recommendation_list
         )
         if same_context:
             outfit_index = session.last_outfit_index or 0
         else:
             outfit_index = 0
             recompute = True  # new occasion, new temperature, or new style — the old frozen list no longer applies
+
     elif rejecting and session and session.last_intent and session.last_recommendation_list:
         intent = session.last_intent
-        outfit_index = (session.last_outfit_index or 0) + 1
         if temp_for_lookup is None:
             temp_for_lookup = session.last_temp_c
-        # recompute stays False — reuses the frozen list, no engine call
+        # recompute stays False — reuses the frozen list, no engine call.
+        pool_len = len(session.last_recommendation_list)
+        if pool_len <= 1:
+            outfit_index = 0  # nothing else to switch to
+        else:
+            previous_index = session.last_outfit_index or 0
+            outfit_index = random.choice([i for i in range(pool_len) if i != previous_index])
+
     elif is_style_only_followup(message, detected_intent, rejecting) and session and session.last_intent:
         intent = session.last_intent
         outfit_index = 0
@@ -239,11 +258,12 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
                     "the kind of item that might round it out — keep it conversational, vary your "
                     "phrasing, don't invent a combination that doesn't actually exist."
                 )
-            elif outfit_index < len(compact_list):
+            else:
                 # ===================== CHANGE START =====================
-                # Reconstructs the full outfit dict from the frozen entry's
-                # ids, looking items up in the CURRENT wardrobe (so images/
-                # data stay fresh even though the ranking itself is frozen)
+                # outfit_index is always a valid position in compact_list
+                # now (guaranteed by the random-selection logic above), so
+                # the old "run past the end of the list -> EXHAUSTED" branch
+                # is no longer reachable and has been removed.
                 entry = compact_list[outfit_index]
                 top = item_lookup.get(entry["top_id"]) if entry.get("top_id") else None
                 bottom = item_lookup.get(entry["bottom_id"]) if entry.get("bottom_id") else None
@@ -252,19 +272,12 @@ def get_stylist_reply(user, message, session=None, lat=None, lon=None):
                     "top": WardrobeItemSerializer(top).data if top else None,
                     "bottom": WardrobeItemSerializer(bottom).data if bottom else None,
                     "jacket": WardrobeItemSerializer(jacket).data if jacket else None,
-                    "final_score": entry["final_score"],
+                    # NOTE: assumes entry["final_score"] is a 0-1 similarity score from
+                    # get_recommendations(). If it's already on a 0-100 scale, drop the *100.
+                    "match_percent": round(entry["final_score"] * 100),
                     "off_season": entry["off_season"],
                 }
                 # ===================== CHANGE END =====================
-            else:
-                recommended_outfit = (
-                    "EXHAUSTED. Every outfit in the recommendation engine's ranked list for this "
-                    "occasion/weather has already been shown across this conversation — tell the "
-                    "user clearly there are no more suitable ranked options left, do not repeat an "
-                    "earlier one or invent a new one. You may, ONLY as an absolute last resort, "
-                    "mention individual items directly from the wardrobe yourself — but explicitly "
-                    "say these are not the engine's ranked picks."
-                )
 
             if used_default_temp and isinstance(recommended_outfit, dict):
                 recommended_outfit = {**recommended_outfit, "_note_to_ai": (
