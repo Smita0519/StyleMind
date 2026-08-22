@@ -1623,7 +1623,7 @@ async function handleCancel() {
                   return (
                     <div
                       key={key}
-                      className="relative rounded-xl border border-[#EAEAEA] bg-[#FAF8F5] p-9"
+                      className="relative rounded-xl border border-[#EAEAEA] bg-[#FAF8F5] p-2"
                     >
                       <button
                         onClick={() =>
