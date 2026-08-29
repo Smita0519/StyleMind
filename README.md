@@ -4,15 +4,26 @@ An AI-powered outfit recommendation system. Upload photos of your wardrobe, and 
 
 ## Architecture
 
+# StyleMind
+
+An AI-powered outfit recommendation system. Upload photos of your wardrobe, and StyleMind classifies each garment, extracts its dominant colors, and recommends complete outfits based on weather, occasion, and color harmony.
+
+## Architecture
+
 **1. Garment Classification (CNN)**
-- MobileNetV2 backbone, 224×224 input, three prediction heads trained sequentially:
+- MobileNetV2 backbone, 224×224 input, three prediction heads trained jointly (not sequentially — Phase 1 is a single multi-head training run):
   - **Category** (10 classes: Blazer, Dress, Formal_Pant, Jacket, Pants, Shirt, Shorts, Skirt, Top, Warmwear)
-  - **Texture/pattern** (7 classes: checkered, embroidered, floral, graphic, pleated, solid, striped)
-  - **Season** (4 classes: summer, winter, fall, all-season) — hardcoded by rule for Warmwear/Jacket/Shorts rather than model-predicted
+  - **Pattern** (7 classes: checkered, embroidered, floral, graphic, pleated, solid, striped) — internally still referred to as the "texture" head in the training pipeline code (column names, output layer name), since renaming it there would require retraining; "Pattern" is the correct user-facing term, since this head classifies print/pattern, not fabric texture
+  - **Season** (4 classes: summer, winter, fall, all-season)
 - Preprocessing: YOLO-seg (`deepfashion2_yolov8s-seg.pt`) for background removal/cropping only — not classification
-- Test accuracy: Category 87.7%, Texture 78.1%, Season 75.1%
+- Labels for pattern and season are CLIP-generated (zero-shot, `ViT-L-14`/`laion2b_s32b_b82k`) via a prompt-ensemble + confidence-margin fallback, not hand-annotated
+- Test accuracy (with test-time augmentation): Category 89.7%, Pattern 77.0%, Season 66.2%
+- Pattern's minority classes are notably weaker than the majority `solid` class — `embroidered` (30% F1, 24 test images) and `pleated` (37% F1, 55 test images) lag well behind `solid` (87% F1, 409 of 639 test images) — the same class-imbalance pattern later identified and partially addressed for season
+- A season class-imbalance issue was identified (winter has ~4x fewer training images than summer) and addressed with a class-weighted loss variant; this improved winter recall by +9.4 points (40.6% → 50.0%) at a small cost to winter precision and overall aggregate accuracy. The unweighted model is the one currently shipped; the weighted version is kept as a documented comparison (see `notebooks/cnn-training-pipeline/` training logs)
+- Backbone fine-tuning (unfreezing MobileNetV2's top layers) was also tried and rejected — it overfit almost immediately given the dataset size (~3000 training images after the split) and made season accuracy slightly worse
 - Dominant colors extracted via K-Means on the alpha-masked foreground (top 3 hex colors per item)
-- Training pipeline archived in `notebooks/cnn-training-pipeline/` (dataset prep through evaluation — training is complete; this is reference material, not actively run)
+- Training pipeline in `notebooks/cnn-training-pipeline/` — actively maintained, not just archived; latest retrain was run via a Colab-prep + GPU-training split (data prep on Colab's free GPU tier, training on a local/Colab GPU)
+
 
 **2. Recommendation Engine**
 Pipeline: `filter → KNN → color harmony → weighted ranking`
@@ -49,8 +60,7 @@ StyleMind/
 │   │       ├── color_harmony.py
 │   │       └── recommend.py
 │   └── models/                     # trained artifacts (best_model_phase1.keras, label_maps.json, YOLO checkpoint)
-├── notebooks/
-│   └── cnn-training-pipeline/      # archived: dataset prep → training → evaluation (training complete)
+├──  stylemind-cnn-training-pipeline/      # archived: dataset prep → training → evaluation (training complete)
 └── README.md
 ```
 

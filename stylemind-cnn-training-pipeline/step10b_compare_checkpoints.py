@@ -1,40 +1,42 @@
 """
-Step 10b - Compare two trained checkpoints on the held-out test set.
+Step 10b - Final test-set evaluation of the shipped model (Phase 1).
 
-Built to answer one specific question: did season-weighted training
-actually help winter (and other rare season classes), even though its
-OVERALL season accuracy came in slightly below phase 1's? Aggregate
-accuracy can hide a real per-class tradeoff (e.g. winter recall up,
-summer accuracy down, roughly cancelling out) - this prints per-class
-precision/recall/F1 for season specifically so that tradeoff is visible
-instead of guessed at.
+Simplified from the earlier version: originally compared Phase 1 against
+a season-weighted variant, but that variant was dropped (it improved
+winter recall at the cost of overall season accuracy and added a second
+model to maintain/explain for not enough benefit) - Phase 1 is the only
+shipped model now. This just evaluates it cleanly and produces one
+confusion matrix per head.
+
+Note on naming: internally (column names in the manifest CSVs, the
+model's output layer name, variables below) this head is still called
+"texture" - that's what it was trained/saved as, and renaming it in
+code would need touching the manifests and retraining. "Pattern" is
+used in all printed output and plot titles here since that's the
+correct user-facing term (this head classifies print/pattern, not
+fabric texture).
 
 Unlike step10_evaluate.py, this does NOT retrain anything - it builds a
 bare (uncompiled) model architecture and loads pretrained weights
 directly via model.load_weights(), which sidesteps needing to
-deserialize the custom loss functions each checkpoint was originally
+deserialize the custom loss function the checkpoint was originally
 compiled with (irrelevant for evaluation - we only need weights + a
 metric to compute accuracy from, not the exact training-time loss).
 
-Test-time augmentation (TTA) is used for both checkpoints, matching
-config.py's TTA_ENABLED, so the comparison is apples-to-apples with
-step10_evaluate.py's methodology.
+Test-time augmentation (TTA) is used, matching config.py's TTA_ENABLED.
 """
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 
-from config import IMG_SIZE, MANIFEST_TEST_PATH, OUTPUT_ROOT, TTA_ENABLED
+from config import CHECKPOINT_PATH_PHASE1, IMG_SIZE, MANIFEST_TEST_PATH, OUTPUT_ROOT, TTA_ENABLED
 import os
 from step7_build_tf_datasets import build_datasets
 from step8_build_model import build_model
 
 AUTOTUNE = tf.data.AUTOTUNE
-
-CHECKPOINT_PHASE1 = os.path.join(OUTPUT_ROOT, "best_model_phase1.keras")
-CHECKPOINT_SEASON_WEIGHTED = os.path.join(OUTPUT_ROOT, "best_model_season_weighted.keras")
 
 
 def _load_image(filepath, img_size=IMG_SIZE):
@@ -77,9 +79,26 @@ def tta_predict(model, filepaths, views=("original", "flip", "zoom")):
     return averaged
 
 
-def evaluate_checkpoint(checkpoint_path, label, test_df, category_to_idx, texture_to_idx, season_to_idx):
+def _plot_confusion(y_true, y_pred, class_names, head_name, save_path):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    cm = confusion_matrix(y_true, y_pred)
+    n = len(class_names)
+    plt.figure(figsize=(max(6, n * 0.9), max(5, n * 0.8)))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title(f"{head_name} Confusion Matrix — Test Set")
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=100, bbox_inches="tight")
+    plt.show()
+    print(f"Saved -> {save_path}")
+
+
+def evaluate_checkpoint(checkpoint_path, test_df, category_to_idx, texture_to_idx, season_to_idx):
     print("\n" + "#" * 70)
-    print(f"# {label}  ({checkpoint_path})")
+    print(f"# StyleMind CNN — Final Test-Set Evaluation  ({checkpoint_path})")
     print("#" * 70)
 
     model, _ = build_model(
@@ -89,28 +108,55 @@ def evaluate_checkpoint(checkpoint_path, label, test_df, category_to_idx, textur
     )
     model.load_weights(checkpoint_path)
 
-    season_classes = sorted(season_to_idx, key=season_to_idx.get)
-
     if TTA_ENABLED:
         y_pred = tta_predict(model, test_df["filepath"].values)
     else:
-        # build a plain eval dataset if TTA is off
         filepaths = test_df["filepath"].values
         ds = tf.data.Dataset.from_tensor_slices(filepaths).map(_load_image).batch(32).prefetch(AUTOTUNE)
         y_pred = model.predict(ds, verbose=0)
 
+    category_pred_idx = np.argmax(y_pred[0], axis=1)
+    pattern_pred_idx = np.argmax(y_pred[1], axis=1)
     season_pred_idx = np.argmax(y_pred[2], axis=1)
+
+    category_true_idx = test_df["category"].map(category_to_idx).values
+    pattern_true_idx = test_df["texture"].map(texture_to_idx).values
     season_true_idx = test_df["season"].map(season_to_idx).values
 
+    overall_category_acc = (category_pred_idx == category_true_idx).mean()
+    overall_pattern_acc = (pattern_pred_idx == pattern_true_idx).mean()
     overall_season_acc = (season_pred_idx == season_true_idx).mean()
-    print(f"\nOverall season accuracy: {overall_season_acc:.4f}")
 
-    print(f"\nSEASON - per-class report ({'with TTA' if TTA_ENABLED else 'no TTA'})")
+    print(f"\nOverall test accuracy — category: {overall_category_acc:.4f}  "
+          f"pattern: {overall_pattern_acc:.4f}  season: {overall_season_acc:.4f}")
+
+    tta_label = "with TTA" if TTA_ENABLED else "no TTA"
+
+    category_classes = sorted(category_to_idx, key=category_to_idx.get)
+    pattern_classes = sorted(texture_to_idx, key=texture_to_idx.get)
+    season_classes = sorted(season_to_idx, key=season_to_idx.get)
+
+    print(f"\nCATEGORY - per-class report ({tta_label})")
+    print(classification_report(
+        category_true_idx, category_pred_idx, target_names=category_classes, digits=3,
+    ))
+
+    print(f"\nPATTERN - per-class report ({tta_label})")
+    print(classification_report(
+        pattern_true_idx, pattern_pred_idx, target_names=pattern_classes, digits=3,
+    ))
+
+    print(f"\nSEASON - per-class report ({tta_label})")
     print(classification_report(
         season_true_idx, season_pred_idx, target_names=season_classes, digits=3,
     ))
 
-    return season_true_idx, season_pred_idx, season_classes
+    _plot_confusion(category_true_idx, category_pred_idx, category_classes, "Category",
+                     os.path.join(OUTPUT_ROOT, "confusion_category.png"))
+    _plot_confusion(pattern_true_idx, pattern_pred_idx, pattern_classes, "Pattern",
+                     os.path.join(OUTPUT_ROOT, "confusion_pattern.png"))
+    _plot_confusion(season_true_idx, season_pred_idx, season_classes, "Season",
+                     os.path.join(OUTPUT_ROOT, "confusion_season.png"))
 
 
 def main():
@@ -118,17 +164,7 @@ def main():
     category_to_idx, texture_to_idx, season_to_idx = label_maps
     test_df = pd.read_csv(MANIFEST_TEST_PATH)
 
-    evaluate_checkpoint(CHECKPOINT_PHASE1, "PHASE 1 (frozen backbone, unweighted)",
-                        test_df, category_to_idx, texture_to_idx, season_to_idx)
-
-    evaluate_checkpoint(CHECKPOINT_SEASON_WEIGHTED, "SEASON-WEIGHTED (frozen backbone, winter upweighted)",
-                        test_df, category_to_idx, texture_to_idx, season_to_idx)
-
-    print("\n" + "=" * 70)
-    print("Compare the two 'winter' rows above (precision/recall/F1) directly -")
-    print("that's the number that tells you whether the weighting actually helped")
-    print("the class it targeted, regardless of what overall season accuracy showed.")
-    print("=" * 70)
+    evaluate_checkpoint(CHECKPOINT_PATH_PHASE1, test_df, category_to_idx, texture_to_idx, season_to_idx)
 
 
 if __name__ == "__main__":
